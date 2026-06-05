@@ -1,4 +1,5 @@
 // Gerencia a janela frameless always-on-top e o ícone de bandeja (atende 001).
+// Painéis laterais (Mochila/Portal) abrem como janelas Electron separadas e flutuantes.
 
 import { BrowserWindow, Tray, Menu, screen, nativeImage, app } from "electron";
 import { join } from "node:path";
@@ -15,12 +16,15 @@ export interface OpcoesJanela {
 
 const LARGURA_BASE = 520;
 const ALTURA_BASE = 420;
+const LARGURA_MOCHILA = 540;
+const LARGURA_PORTAL = 380;
+const ALTURA_PAINEL = 560;
 
 export class GerenciadorDeJanela {
   private janela: BrowserWindow | null = null;
   private bandeja: Tray | null = null;
-  private larguraEsquerda = 0;
-  private larguraDireita = 0;
+  private janelasMochila: BrowserWindow | null = null;
+  private janelasPortal: BrowserWindow | null = null;
 
   constructor(private readonly opcoes: OpcoesJanela) {}
 
@@ -52,15 +56,46 @@ export class GerenciadorDeJanela {
       if (!this.janela) return;
       const posicao = this.janela.getPosition();
       this.opcoes.aoMover(posicao[0] ?? 0, posicao[1] ?? 0);
+      // Reposiciona painéis flutuantes se a janela principal se mover
+      this.reposicionarPaineis();
     });
 
     this.criarBandeja();
   }
 
+  /** Envia mensagem somente para a janela principal. */
   enviar(canal: string, dados: unknown): void {
     if (this.janela && !this.janela.isDestroyed()) {
       this.janela.webContents.send(canal, dados);
     }
+  }
+
+  /** Broadcast para todas as janelas abertas (principal + painéis). */
+  emitirParaTodos(canal: string, dados: unknown): void {
+    const janelas = [this.janela, this.janelasMochila, this.janelasPortal];
+    for (const j of janelas) {
+      if (j && !j.isDestroyed()) j.webContents.send(canal, dados);
+    }
+  }
+
+  /** Alterna o painel flutuante: abre se fechado, fecha se aberto. */
+  abrirOuFecharPainel(painel: "mochila" | "portal"): void {
+    const janelaPainel = painel === "mochila" ? this.janelasMochila : this.janelasPortal;
+    if (janelaPainel && !janelaPainel.isDestroyed()) {
+      janelaPainel.destroy();
+      if (painel === "mochila") this.janelasMochila = null;
+      else this.janelasPortal = null;
+    } else {
+      this.criarJanelaPainel(painel);
+    }
+  }
+
+  /** Fecha (destrói) o painel flutuante. */
+  fecharPainel(painel: "mochila" | "portal"): void {
+    const janelaPainel = painel === "mochila" ? this.janelasMochila : this.janelasPortal;
+    if (janelaPainel && !janelaPainel.isDestroyed()) janelaPainel.destroy();
+    if (painel === "mochila") this.janelasMochila = null;
+    else this.janelasPortal = null;
   }
 
   minimizar(): void {
@@ -72,49 +107,78 @@ export class GerenciadorDeJanela {
     });
   }
 
-  expandir(lado: "esquerda" | "direita", larguraPainel: number): void {
-    if (!this.janela || this.janela.isDestroyed()) return;
-    const area = screen.getPrimaryDisplay().workArea;
-    const pos = this.janela.getPosition();
-    const cx = pos[0] ?? 0;
-    const cy = pos[1] ?? 0;
-
-    if (lado === "esquerda") {
-      this.larguraEsquerda = larguraPainel;
-    } else {
-      this.larguraDireita = larguraPainel;
-    }
-
-    const novaLargura = LARGURA_BASE + this.larguraEsquerda + this.larguraDireita;
-    const novoX = Math.max(area.x, cx - (lado === "esquerda" ? larguraPainel : 0));
-    const novoXClamped = Math.min(novoX, area.x + area.width - novaLargura);
-
-    this.janela.setResizable(true);
-    this.janela.setBounds({ x: novoXClamped, y: cy, width: novaLargura, height: ALTURA_BASE }, true);
-    this.janela.setResizable(false);
-  }
-
-  encolher(lado: "esquerda" | "direita"): void {
-    if (!this.janela || this.janela.isDestroyed()) return;
-    const pos = this.janela.getPosition();
-    const cx = pos[0] ?? 0;
-    const cy = pos[1] ?? 0;
-
-    const larPainel = lado === "esquerda" ? this.larguraEsquerda : this.larguraDireita;
-    if (lado === "esquerda") this.larguraEsquerda = 0;
-    else this.larguraDireita = 0;
-
-    const novaLargura = LARGURA_BASE + this.larguraEsquerda + this.larguraDireita;
-    const novoX = lado === "esquerda" ? cx + larPainel : cx;
-
-    this.janela.setResizable(true);
-    this.janela.setBounds({ x: novoX, y: cy, width: novaLargura, height: ALTURA_BASE }, true);
-    this.janela.setResizable(false);
-  }
-
   get conteudoWeb() {
     return this.janela?.webContents ?? null;
   }
+
+  // ---- criação do painel flutuante ----
+
+  private criarJanelaPainel(painel: "mochila" | "portal"): void {
+    if (!this.janela || this.janela.isDestroyed()) return;
+    const area = screen.getPrimaryDisplay().workArea;
+    const mainBounds = this.janela.getBounds();
+    const largura = painel === "mochila" ? LARGURA_MOCHILA : LARGURA_PORTAL;
+
+    let x: number;
+    if (painel === "mochila") {
+      x = Math.max(area.x, mainBounds.x - largura);
+    } else {
+      x = Math.min(mainBounds.x + mainBounds.width, area.x + area.width - largura);
+    }
+    const y = mainBounds.y;
+
+    const janelaPainel = new BrowserWindow({
+      width: largura,
+      height: ALTURA_PAINEL,
+      minWidth: 300,
+      minHeight: 320,
+      x,
+      y,
+      frame: false,
+      resizable: true,
+      alwaysOnTop: true,
+      skipTaskbar: true,
+      transparent: false,
+      backgroundColor: "#0d0f1a",
+      webPreferences: {
+        preload: join(__dirname, "preload.js"),
+        contextIsolation: true,
+        nodeIntegration: false,
+        sandbox: true,
+      },
+    });
+
+    janelaPainel.setAlwaysOnTop(true, "screen-saver");
+    void janelaPainel.loadFile(join(__dirname, "../apresentacao/index.html"), {
+      query: { painel },
+    });
+
+    if (painel === "mochila") {
+      this.janelasMochila = janelaPainel;
+      janelaPainel.on("closed", () => { this.janelasMochila = null; });
+    } else {
+      this.janelasPortal = janelaPainel;
+      janelaPainel.on("closed", () => { this.janelasPortal = null; });
+    }
+  }
+
+  /** Reposiciona as janelas de painel quando a janela principal se move. */
+  private reposicionarPaineis(): void {
+    if (!this.janela || this.janela.isDestroyed()) return;
+    const area = screen.getPrimaryDisplay().workArea;
+    const mainBounds = this.janela.getBounds();
+
+    if (this.janelasMochila && !this.janelasMochila.isDestroyed()) {
+      const x = Math.max(area.x, mainBounds.x - LARGURA_MOCHILA);
+      this.janelasMochila.setPosition(x, mainBounds.y);
+    }
+    if (this.janelasPortal && !this.janelasPortal.isDestroyed()) {
+      const x = Math.min(mainBounds.x + mainBounds.width, area.x + area.width - LARGURA_PORTAL);
+      this.janelasPortal.setPosition(x, mainBounds.y);
+    }
+  }
+
+  // ---- bandeja ----
 
   private criarBandeja(): void {
     const icone = nativeImage.createFromDataURL(ICONE_DATA_URL);

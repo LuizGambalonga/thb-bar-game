@@ -1,5 +1,5 @@
 // Motor de combate idle: simulação determinística por tick. TS puro.
-// Responsabilidade única: simular o combate (ataques + habilidades).
+// Responsabilidade única: simular o combate (ataques + habilidades + movimento).
 // Loot/XP são tratados fora, via eventos.
 
 import {
@@ -10,6 +10,10 @@ import type {
 } from "../dominio/tipos.js";
 import { calcularDano } from "../atributos/CalculadoraDeAtributos.js";
 import type { GeradorAleatorio } from "../aleatorio/GeradorAleatorio.js";
+
+const VELOCIDADE_MOVIMENTO_PADRAO = 0.020; // fração de arena por tick
+const ALCANCE_ATAQUE_PADRAO = 0.18;        // distância de ataque em fração de arena
+const POS_X_SPAWN_BASE = 0.90;             // posição inicial dos inimigos (direita)
 
 export interface Combatente {
   id: string;
@@ -26,6 +30,10 @@ export interface Combatente {
   vidaAtual: number;
   vivo: boolean;
   posicao: PosicaoFormacao;
+  posicaoX: number;            // 0..1 normalizado na arena
+  atacando: boolean;           // true = em alcance de ataque
+  velocidadeMovimento: number; // fração arena/tick (heróis = 0)
+  alcanceAtaque: number;       // distância de ataque em fração arena
   proximoAtaqueEmTick: number;
   habilidades: DefHabilidade[];
   cooldowns: Map<string, number>; // id da habilidade → tick em que fica pronta
@@ -39,6 +47,7 @@ export type EventoCombate =
   | { tipo: "habilidade"; idAutor: string; idHabilidade: string }
   | { tipo: "morteInimigo"; idMonstro: string; idTabelaEspolio: string; xp: number }
   | { tipo: "morteHeroi"; slot: number }
+  | { tipo: "ressurreicao"; id: string; slot: number }
   | { tipo: "ondaIniciada"; indice: number }
   | { tipo: "faseConcluida" }
   | { tipo: "partyDerrotada" };
@@ -89,6 +98,7 @@ export class MotorDeCombate {
       return eventos;
     }
 
+    this.moverInimigos();
     this.processarHabilidades(rng, eventos);
     this.processarAtaques(rng, eventos);
     this.avaliarFimDeOnda(eventos);
@@ -103,14 +113,45 @@ export class MotorDeCombate {
   get heroisEmCombate(): readonly Combatente[] { return this.herois; }
   get inimigosEmCombate(): readonly Combatente[] { return this.inimigos; }
 
+  // ---- movimento dos inimigos ----
+
+  private moverInimigos(): void {
+    // Alvo: primeiro herói da frente vivo; se não houver, qualquer vivo
+    const alvo = this.herois.find((h) => h.vivo && h.posicao === "frente")
+      ?? this.herois.find((h) => h.vivo);
+    if (!alvo) return;
+
+    for (const inimigo of this.inimigos) {
+      if (!inimigo.vivo) continue;
+      const distancia = inimigo.posicaoX - alvo.posicaoX;
+      if (distancia > inimigo.alcanceAtaque) {
+        inimigo.posicaoX = Math.max(
+          alvo.posicaoX + inimigo.alcanceAtaque,
+          inimigo.posicaoX - inimigo.velocidadeMovimento,
+        );
+        inimigo.atacando = false;
+      } else {
+        inimigo.atacando = true;
+      }
+    }
+  }
+
   // ---- ataques básicos ----
 
   private processarAtaques(rng: GeradorAleatorio, eventos: EventoCombate[]): void {
-    for (const atacante of [...this.herois, ...this.inimigos]) {
+    for (const atacante of this.herois) {
       if (!atacante.vivo) continue;
       if (this.tickAtual < atacante.proximoAtaqueEmTick) continue;
-
-      const alvo = atacante.ehHeroi ? this.primeiroVivo(this.inimigos) : this.escolherAlvoHeroi();
+      const alvo = this.primeiroVivo(this.inimigos);
+      atacante.proximoAtaqueEmTick = this.tickAtual + this.intervaloAtaque(atacante);
+      if (!alvo) continue;
+      this.aplicarDano(atacante, alvo, 1, rng, eventos);
+    }
+    for (const atacante of this.inimigos) {
+      if (!atacante.vivo) continue;
+      if (!atacante.atacando) continue; // aguarda chegar em alcance
+      if (this.tickAtual < atacante.proximoAtaqueEmTick) continue;
+      const alvo = this.escolherAlvoHeroi();
       atacante.proximoAtaqueEmTick = this.tickAtual + this.intervaloAtaque(atacante);
       if (!alvo) continue;
       this.aplicarDano(atacante, alvo, 1, rng, eventos);
@@ -125,6 +166,10 @@ export class MotorDeCombate {
       for (const habilidade of heroi.habilidades) {
         const prontaEm = heroi.cooldowns.get(habilidade.id) ?? 0;
         if (this.tickAtual < prontaEm) continue;
+
+        // Ressuscitar: só dispara quando há aliado morto; não consome cooldown se não houver.
+        if (habilidade.tipo === "ressuscitar" && !this.herois.some((h) => !h.vivo)) continue;
+
         heroi.cooldowns.set(habilidade.id, this.tickAtual + habilidade.cooldownTicks);
         this.aplicarHabilidade(heroi, habilidade, rng, eventos);
       }
@@ -146,8 +191,17 @@ export class MotorDeCombate {
       alvo.vidaAtual = Math.min(alvo.vidaMax, alvo.vidaAtual + cura);
       eventos.push({ tipo: "habilidade", idAutor: autor.id, idHabilidade: habilidade.id });
       eventos.push({ tipo: "cura", idAlvo: alvo.id, quantidade: cura });
+    } else if (habilidade.tipo === "ressuscitar") {
+      const morto = this.herois.find((h) => !h.vivo);
+      if (!morto) return;
+      morto.vivo = true;
+      morto.vidaAtual = Math.max(1, Math.floor(morto.vidaMax * habilidade.potencia));
+      morto.atacando = true;
+      morto.proximoAtaqueEmTick = this.tickAtual + this.intervaloAtaque(morto);
+      eventos.push({ tipo: "habilidade", idAutor: autor.id, idHabilidade: habilidade.id });
+      eventos.push({ tipo: "ressurreicao", id: morto.id, slot: morto.slot });
     } else {
-      // buff próprio: aumenta o ataque por uma duração.
+      // buff próprio
       autor.buffAtaque = habilidade.potencia;
       autor.buffAteTick = this.tickAtual + DURACAO_BUFF_TICKS;
       eventos.push({ tipo: "habilidade", idAutor: autor.id, idHabilidade: habilidade.id });
@@ -243,6 +297,7 @@ export class MotorDeCombate {
     for (const heroi of this.herois) {
       heroi.vivo = true;
       heroi.vidaAtual = heroi.vidaMax;
+      heroi.atacando = true;
       heroi.proximoAtaqueEmTick = this.tickAtual + this.intervaloAtaque(heroi);
     }
   }
@@ -253,10 +308,14 @@ export class MotorDeCombate {
     const habilidades = h.habilidades ?? [];
     const cooldowns = new Map<string, number>();
     for (const hab of habilidades) cooldowns.set(hab.id, this.tickAtual + hab.cooldownTicks);
+    // Posição horizontal: frente fica à esquerda, trás levemente recuado
+    const posicaoX = h.posicao === "frente" ? 0.10 + h.slot * 0.03 : 0.20 + h.slot * 0.03;
     return {
       id: `heroi-${h.slot}`, nome: h.nome, icone: h.icone ?? "🦸", ehHeroi: true, slot: h.slot, xpConcedido: 0,
       atributos: h.atributos, elemento: h.elemento, vidaMax: h.atributos.vida, vidaAtual: h.atributos.vida,
-      vivo: true, posicao: h.posicao, proximoAtaqueEmTick: this.tickAtual + this.intervaloAtaqueAtributos(h.atributos),
+      vivo: true, posicao: h.posicao, posicaoX, atacando: true, velocidadeMovimento: 0,
+      alcanceAtaque: ALCANCE_ATAQUE_PADRAO,
+      proximoAtaqueEmTick: this.tickAtual + this.intervaloAtaqueAtributos(h.atributos),
       habilidades, cooldowns, buffAtaque: 0, buffAteTick: 0,
     };
   }
@@ -268,12 +327,15 @@ export class MotorDeCombate {
       vida: Math.round(def.atributos.vida * escala),
       ataque: Math.round(def.atributos.ataque * escala),
     };
+    // Inimigos surgem escalonados à direita; atacando=false até chegar em alcance
+    const posicaoX = Math.min(0.98, POS_X_SPAWN_BASE + indice * 0.02);
     return {
       id: `inimigo-${this.indiceOnda}-${indice}`, nome: def.nome, icone: def.icone, ehHeroi: false, slot: indice,
       idMonstro: def.id, idTabelaEspolio: def.idTabelaEspolio, xpConcedido: Math.round(def.xpConcedido * escala),
       atributos, elemento: def.elemento, vidaMax: atributos.vida, vidaAtual: atributos.vida,
-      // ataques iniciais escalonados (indice) para não baterem todos no mesmo tick
-      vivo: true, posicao: "frente",
+      vivo: true, posicao: "frente", posicaoX, atacando: false,
+      velocidadeMovimento: def.velocidadeMovimento ?? VELOCIDADE_MOVIMENTO_PADRAO,
+      alcanceAtaque: def.alcanceAtaque ?? ALCANCE_ATAQUE_PADRAO,
       proximoAtaqueEmTick: this.tickAtual + this.intervaloAtaqueAtributos(atributos) + (indice % 5) * 2,
       habilidades: [], cooldowns: new Map(), buffAtaque: 0, buffAteTick: 0,
     };

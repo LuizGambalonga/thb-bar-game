@@ -15,6 +15,31 @@ const COR_RARIDADE: Record<Raridade, string> = {
 const ICONE_ESPACO: Record<EspacoEquipamento, string> = {
   arma: "⚔️", armadura: "🛡️", elmo: "⛑️", botas: "🥾", acessorio1: "💍", acessorio2: "💍",
 };
+// Ícone específico por definição de item (vai além do slot genérico)
+const ICONE_ITEM: Record<string, string> = {
+  "espada-bit": "🗡️",
+  "machado-kernel": "🪓",
+  "arco-pixel": "🏹",
+  "cajado-byte": "🪄",
+  "varinha-cache": "⚡",
+  "armadura-cache": "🛡️",
+  "colete-ping": "🦺",
+  "manto-ram": "🧥",
+  "elmo-pixel": "⛑️",
+  "capuz-thread": "🎓",
+  "tiara-cpu": "👑",
+  "botas-ping": "🥾",
+  "sandalia-lag": "👟",
+  "anel-bit": "💍",
+  "amuleto-fps": "📿",
+};
+const ICONE_CLASSE: Record<IdClasse, string> = {
+  cavaleiro: "⚔️", carrasco: "💀", feiticeira: "🔮", sacerdote: "✨", cacador: "🏹", patrulheiro: "🛡️",
+};
+const NOME_CLASSE: Record<IdClasse, string> = {
+  cavaleiro: "Cavaleiro", carrasco: "Carrasco", feiticeira: "Feiticeira",
+  sacerdote: "Sacerdote", cacador: "Caçador", patrulheiro: "Patrulheiro",
+};
 const ESPACOS: EspacoEquipamento[] = ["arma", "armadura", "elmo", "botas", "acessorio1", "acessorio2"];
 const GRUPO_CLASSE: Record<IdClasse, string> = {
   cavaleiro: "⚔", carrasco: "⚔", feiticeira: "🔮", sacerdote: "🔮", cacador: "🏹", patrulheiro: "🏹",
@@ -38,10 +63,25 @@ function formatarAtributo(chave: string, valor: number): string {
 }
 function nomeCurto(nome: string): string { return nome.split("—")[0]!.trim(); }
 
+const ESPACOS_FILTRO: { espaco: EspacoEquipamento | null; label: string }[] = [
+  { espaco: null, label: "Todos" },
+  { espaco: "arma", label: "⚔️" },
+  { espaco: "armadura", label: "🛡️" },
+  { espaco: "elmo", label: "⛑️" },
+  { espaco: "botas", label: "🥾" },
+  { espaco: "acessorio1", label: "💍" },
+];
+
+type OrdenacaoMochila = "poder-desc" | "raridade-desc" | "nome-az";
+
 export class PainelInterface {
   private itemSelecionado: string | null = null;
   private abaStatusAtiva = 0;
   private atoAtivo = 1;
+  private filtroEspaco: EspacoEquipamento | null = null;
+  private filtroClasse: IdClasse | null = null;
+  private ordenacaoMochila: OrdenacaoMochila = "poder-desc";
+  private tooltipEl: HTMLElement | null = null;
 
   constructor(private readonly doc: Document) {
     this.configurarSplash();
@@ -76,26 +116,154 @@ export class PainelInterface {
   // ─────────────────────────────────────────────────────────────────────────
 
   private renderStash(meta: SnapshotMeta): void {
-    const livres = meta.inventario
-      .filter((i) => i.equipadoPorSlot === null)
-      .sort((a, b) => b.poder - a.poder);
+    this.ocultarTooltip();
+    this.renderFiltrosMochila(meta);
+
+    const livresTotal = meta.inventario.filter((i) => i.equipadoPorSlot === null);
+    const livres = this.aplicarFiltroOrdenacao(livresTotal);
 
     const grade = this.elemento("grade-itens");
     grade.innerHTML = "";
     this.renderBotoesLote(meta);
 
     if (livres.length === 0) {
-      grade.innerHTML = `<div class="mochila-vazia">Mochila vazia — derrote a Corrupção!</div>`;
+      grade.innerHTML = `<div class="mochila-vazia">${livresTotal.length === 0 ? "Mochila vazia!" : "Nenhum item neste filtro."}</div>`;
       this.elemento("detalhe-item").innerHTML = "";
       return;
     }
+
+    // Mapa de poder equipado por espaço (para indicador de upgrade)
+    const poderEquipado = new Map<EspacoEquipamento, number>();
+    for (const item of meta.inventario) {
+      if (item.equipadoPorSlot !== null) {
+        const atual = poderEquipado.get(item.espaco) ?? 0;
+        if (item.poder > atual) poderEquipado.set(item.espaco, item.poder);
+      }
+    }
+
     const melhorPoder = Math.max(...livres.map((i) => i.poder));
     const raridadeMax = Math.max(...livres.map((i) => RARIDADES_ORDENADAS.indexOf(i.raridade)));
-    for (const item of livres) grade.appendChild(this.celulaItem(item, meta, melhorPoder, raridadeMax));
+    for (const item of livres) {
+      const ehUpgrade = item.poder > (poderEquipado.get(item.espaco) ?? 0);
+      grade.appendChild(this.celulaItem(item, meta, melhorPoder, raridadeMax, ehUpgrade));
+    }
 
     const sel = livres.find((i) => i.uid === this.itemSelecionado) ?? livres[0]!;
     this.itemSelecionado = sel.uid;
     this.renderDetalhe(sel, meta);
+  }
+
+  private aplicarFiltroOrdenacao(livres: ItemSnapshot[]): ItemSnapshot[] {
+    let resultado = livres;
+
+    if (this.filtroClasse) {
+      const fc = this.filtroClasse;
+      resultado = resultado.filter((i) => i.classesAfins.length === 0 || i.classesAfins.includes(fc));
+    }
+
+    if (this.filtroEspaco) {
+      resultado = resultado.filter((i) => i.espaco === this.filtroEspaco || (
+        this.filtroEspaco === "acessorio1" && (i.espaco === "acessorio1" || i.espaco === "acessorio2")
+      ));
+    }
+
+    switch (this.ordenacaoMochila) {
+      case "poder-desc":
+        resultado = [...resultado].sort((a, b) => b.poder - a.poder);
+        break;
+      case "raridade-desc":
+        resultado = [...resultado].sort((a, b) =>
+          RARIDADES_ORDENADAS.indexOf(b.raridade) - RARIDADES_ORDENADAS.indexOf(a.raridade));
+        break;
+      case "nome-az":
+        resultado = [...resultado].sort((a, b) => a.nome.localeCompare(b.nome));
+        break;
+    }
+    return resultado;
+  }
+
+  private renderFiltrosMochila(meta: SnapshotMeta): void {
+    const container = this.doc.getElementById("filtros-mochila");
+    if (!container) return;
+    container.innerHTML = "";
+
+    const total = meta.inventario.filter((i) => i.equipadoPorSlot === null).length;
+    const contador = this.doc.createElement("div");
+    contador.className = "mochila-contador";
+    contador.textContent = `${total}/60 itens`;
+    container.appendChild(contador);
+
+    // ── Nível 1: filtro por CLASSE (heróis da party)
+    const classesNoParty = [...new Set(meta.herois.filter(Boolean).map((h) => h!.idClasse))];
+    if (classesNoParty.length > 0) {
+      const rot1 = this.doc.createElement("span");
+      rot1.className = "filtros-rotulo";
+      rot1.textContent = "PERSONAGEM";
+      container.appendChild(rot1);
+
+      const linhaClasses = this.doc.createElement("div");
+      linhaClasses.className = "filtros-linha";
+
+      const btnTodos = this.doc.createElement("button");
+      btnTodos.className = "btn-filtro btn-filtro-classe" + (this.filtroClasse === null ? " ativo" : "");
+      btnTodos.textContent = "Todos";
+      btnTodos.onclick = () => { this.filtroClasse = null; this.filtroEspaco = null; this.itemSelecionado = null; this.renderStash(meta); };
+      linhaClasses.appendChild(btnTodos);
+
+      for (const idClasse of classesNoParty) {
+        const b = this.doc.createElement("button");
+        b.className = "btn-filtro btn-filtro-classe" + (this.filtroClasse === idClasse ? " ativo" : "");
+        b.textContent = `${ICONE_CLASSE[idClasse]} ${NOME_CLASSE[idClasse]}`;
+        b.title = NOME_CLASSE[idClasse];
+        b.onclick = () => { this.filtroClasse = idClasse; this.filtroEspaco = null; this.itemSelecionado = null; this.renderStash(meta); };
+        linhaClasses.appendChild(b);
+      }
+      container.appendChild(linhaClasses);
+    }
+
+    // ── Nível 2: sub-filtro por SLOT (indentado quando classe está selecionada)
+    const wrapperSlot = this.doc.createElement("div");
+    wrapperSlot.className = "filtros-secao" + (this.filtroClasse ? " filtros-subsecao" : "");
+
+    const rot2 = this.doc.createElement("span");
+    rot2.className = "filtros-rotulo";
+    rot2.textContent = this.filtroClasse ? "↳ TIPO DE ITEM" : "TIPO DE ITEM";
+    wrapperSlot.appendChild(rot2);
+
+    const linhaFiltros = this.doc.createElement("div");
+    linhaFiltros.className = "filtros-linha";
+    for (const { espaco, label } of ESPACOS_FILTRO) {
+      const b = this.doc.createElement("button");
+      b.className = "btn-filtro" + (this.filtroEspaco === espaco ? " ativo" : "");
+      b.textContent = label;
+      b.title = espaco ?? "Todos";
+      b.onclick = () => { this.filtroEspaco = espaco; this.itemSelecionado = null; this.renderStash(meta); };
+      linhaFiltros.appendChild(b);
+    }
+    wrapperSlot.appendChild(linhaFiltros);
+    container.appendChild(wrapperSlot);
+
+    // ── Ordenação
+    const rot3 = this.doc.createElement("span");
+    rot3.className = "filtros-rotulo";
+    rot3.textContent = "ORDENAR";
+    container.appendChild(rot3);
+
+    const linhaOrdem = this.doc.createElement("div");
+    linhaOrdem.className = "filtros-linha";
+    const ordens: { valor: OrdenacaoMochila; label: string }[] = [
+      { valor: "poder-desc", label: "Poder↓" },
+      { valor: "raridade-desc", label: "Raridade↓" },
+      { valor: "nome-az", label: "A-Z" },
+    ];
+    for (const { valor, label } of ordens) {
+      const b = this.doc.createElement("button");
+      b.className = "btn-filtro" + (this.ordenacaoMochila === valor ? " ativo" : "");
+      b.textContent = label;
+      b.onclick = () => { this.ordenacaoMochila = valor; this.renderStash(meta); };
+      linhaOrdem.appendChild(b);
+    }
+    container.appendChild(linhaOrdem);
   }
 
   private renderBotoesLote(meta: SnapshotMeta): void {
@@ -119,20 +287,25 @@ export class PainelInterface {
     }
   }
 
-  private celulaItem(item: ItemSnapshot, meta: SnapshotMeta, melhorPoder: number, raridadeMax: number): HTMLElement {
+  private celulaItem(item: ItemSnapshot, meta: SnapshotMeta, melhorPoder: number, raridadeMax: number, ehUpgrade = false): HTMLElement {
     const cel = this.doc.createElement("button");
     cel.className = "celula-item";
     if (item.uid === this.itemSelecionado) cel.classList.add("selecionada");
+    if (ehUpgrade) cel.classList.add("upgrade");
     cel.style.borderColor = COR_RARIDADE[item.raridade] ?? "var(--comum)";
     const ehMelhor = item.poder === melhorPoder;
     const ehRaro = RARIDADES_ORDENADAS.indexOf(item.raridade) === raridadeMax && raridadeMax > 0;
     const grupos = gruposAfins(item.classesAfins);
     const afimAtivos = item.classesAfins.length === 0 || meta.herois.some((h) => h && item.classesAfins.includes(h.idClasse));
+    const icone = ICONE_ITEM[item.idDef] ?? ICONE_ESPACO[item.espaco] ?? "❔";
     cel.innerHTML = `
       ${ehMelhor ? '<span class="estrela" title="Maior poder">👑</span>' : ehRaro ? '<span class="estrela" title="Mais raro">⭐</span>' : ""}
-      <span class="icone">${ICONE_ESPACO[item.espaco] ?? "❔"}</span>
+      <span class="icone">${icone}</span>
       <span class="poder">⚡${item.poder}</span>
+      ${ehUpgrade ? '<span class="icone-upgrade">▲</span>' : ""}
       ${grupos.length > 0 ? `<span class="afim-badge${afimAtivos ? "" : " afim-inutil"}" title="${grupos.map((g) => NOME_GRUPO[g]).join("/")}">${grupos[0]}</span>` : ""}`;
+    cel.addEventListener("mouseenter", () => this.mostrarTooltipComparacao(item, meta, cel));
+    cel.addEventListener("mouseleave", () => this.ocultarTooltip());
     cel.onclick = () => { this.itemSelecionado = item.uid; this.renderStash(meta); };
     return cel;
   }
@@ -140,32 +313,44 @@ export class PainelInterface {
   private renderDetalhe(item: ItemSnapshot, meta: SnapshotMeta): void {
     const d = this.elemento("detalhe-item");
     d.innerHTML = "";
+
     const titulo = this.doc.createElement("div");
     titulo.className = "detalhe-nome";
     titulo.style.color = COR_RARIDADE[item.raridade] ?? "var(--texto)";
     titulo.textContent = `${ICONE_ESPACO[item.espaco] ?? ""} ${item.nome}`;
     d.appendChild(titulo);
-    const grupos = gruposAfins(item.classesAfins);
+
     const sub = this.doc.createElement("div");
     sub.className = "detalhe-sub";
-    sub.textContent = `${item.raridade} • ${item.espaco} • ⚡${item.poder}`;
+    const grupos = gruposAfins(item.classesAfins);
+    sub.textContent = `${item.raridade} • ⚡${item.poder}`;
     if (grupos.length > 0) sub.textContent += ` • ${grupos.map((g) => NOME_GRUPO[g] ?? g).join("/")}`;
     d.appendChild(sub);
-    const ul = this.doc.createElement("ul");
-    ul.className = "detalhe-atributos";
-    if (item.atributos.length === 0) ul.innerHTML = "<li>Sem atributos adicionais.</li>";
-    for (const a of item.atributos) {
-      const li = this.doc.createElement("li");
-      li.textContent = formatarAtributo(a.chave, a.valor);
-      ul.appendChild(li);
-    }
-    d.appendChild(ul);
+
+    // Ações de equipar PRIMEIRO — ação mais importante
     d.appendChild(this.acoesItem(item, meta));
+
+    if (item.atributos.length > 0) {
+      const ul = this.doc.createElement("ul");
+      ul.className = "detalhe-atributos";
+      for (const a of item.atributos) {
+        const li = this.doc.createElement("li");
+        li.textContent = formatarAtributo(a.chave, a.valor);
+        ul.appendChild(li);
+      }
+      d.appendChild(ul);
+    }
   }
 
   private acoesItem(item: ItemSnapshot, meta: SnapshotMeta): HTMLElement {
-    const acoes = this.doc.createElement("div");
-    acoes.className = "detalhe-acoes";
+    const raiz = this.doc.createElement("div");
+    raiz.className = "detalhe-acoes";
+
+    const cabecalho = this.doc.createElement("div");
+    cabecalho.className = "detalhe-equip-titulo";
+    cabecalho.textContent = "Equipar em:";
+    raiz.appendChild(cabecalho);
+
     const heroisOrdenados = meta.herois
       .map((h, slot) => ({ h, slot }))
       .filter(({ h }) => !!h)
@@ -173,18 +358,66 @@ export class PainelInterface {
         const aA = item.classesAfins.includes(a.h!.idClasse) ? 0 : 1;
         const bA = item.classesAfins.includes(b.h!.idClasse) ? 0 : 1;
         return aA - bA;
+      })
+      // Quando o filtro de classe está ativo, mostrar só heróis compatíveis com o item.
+      // Itens universais (sem restrição) aparecem para todos os heróis.
+      .filter(({ h }) => {
+        if (!h) return false;
+        if (item.classesAfins.length === 0) return true;
+        return item.classesAfins.includes(h.idClasse);
       });
+
     for (const { h, slot } of heroisOrdenados) {
       if (!h) continue;
       const afim = item.classesAfins.length === 0 || item.classesAfins.includes(h.idClasse);
-      const b = this.botao(`${afim ? "★ " : ""}Equipar: ${nomeCurto(h.nome)}`, () =>
-        window.jogo.enviarIntencao({ tipo: "equiparItem", uid: item.uid, slotHeroi: slot }));
-      if (afim) b.style.borderColor = "var(--ouro-claro)";
-      acoes.appendChild(b);
+      const atualNoSlot = meta.inventario.find(
+        (i) => i.equipadoPorSlot === slot && i.espaco === item.espaco,
+      );
+
+      const card = this.doc.createElement("div");
+      card.className = "equip-card" + (afim ? " equip-afim" : "");
+
+      const info = this.doc.createElement("div");
+      info.className = "equip-card-info";
+
+      const nomeEl = this.doc.createElement("span");
+      nomeEl.className = "equip-heroi-nome";
+      nomeEl.textContent = (afim ? "★ " : "") + nomeCurto(h.nome);
+      info.appendChild(nomeEl);
+
+      const atualEl = this.doc.createElement("span");
+      atualEl.className = "equip-slot-atual";
+      if (atualNoSlot) {
+        atualEl.textContent = `${nomeCurto(atualNoSlot.nome)} ⚡${atualNoSlot.poder}`;
+        const diff = item.poder - atualNoSlot.poder;
+        if (diff !== 0) {
+          const s = this.doc.createElement("span");
+          s.className = diff > 0 ? "equip-diff-pos" : "equip-diff-neg";
+          s.textContent = ` (${diff > 0 ? "+" : ""}${diff})`;
+          atualEl.appendChild(s);
+        }
+      } else {
+        atualEl.textContent = "— vazio";
+      }
+      info.appendChild(atualEl);
+
+      const btn = this.doc.createElement("button");
+      btn.className = "btn-equipar" + (afim ? " btn-equipar-afim" : "");
+      btn.textContent = "Equipar";
+      btn.onclick = () => window.jogo.enviarIntencao({ tipo: "equiparItem", uid: item.uid, slotHeroi: slot });
+
+      card.appendChild(info);
+      card.appendChild(btn);
+      raiz.appendChild(card);
     }
-    acoes.appendChild(this.botao("Vender", () =>
-      window.jogo.enviarIntencao({ tipo: "venderItem", uid: item.uid })));
-    return acoes;
+
+    const btnVender = this.doc.createElement("button");
+    btnVender.className = "btn-vender-item";
+    btnVender.textContent = "🗑 Vender";
+    btnVender.onclick = () => window.jogo.enviarIntencao({ tipo: "venderItem", uid: item.uid });
+    raiz.appendChild(btnVender);
+
+    return raiz;
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -206,6 +439,7 @@ export class PainelInterface {
     const heroi = meta.herois[slot] ?? null;
     const cartao = this.doc.createElement("div");
     cartao.className = "cartao-party";
+    if (heroi && !heroi.vivo) cartao.classList.add("heroi-morto");
     const canvas = this.doc.createElement("canvas");
     canvas.width = 48; canvas.height = 54;
     if (heroi) this.desenharPreview(canvas, `heroi:${heroi.idClasse}`, 3);
@@ -216,11 +450,12 @@ export class PainelInterface {
       info.innerHTML = `<div class="nome">Slot ${slot + 1}</div><div class="vazio-slot">— vazio —</div>`;
       info.appendChild(this.seletorClasse(slot, meta));
     } else {
+      const badgeMorto = heroi.vivo ? "" : `<span class="badge-morto">☠ Morto</span>`;
       info.innerHTML = `
-        <div class="nome">${heroi.nome}</div>
+        <div class="nome">${heroi.nome}${badgeMorto}</div>
         <div class="linha"><span>Nível ${heroi.nivel}</span><span>DPS ${heroi.danoPorSegundo}</span></div>`;
       info.appendChild(this.paperdoll(slot, meta));
-      info.appendChild(this.controlesFormacao(slot, heroi.posicao));
+      info.appendChild(this.controlesFormacao(slot, heroi));
       info.appendChild(this.seletorClasse(slot, meta));
     }
     cartao.appendChild(info);
@@ -239,9 +474,12 @@ export class PainelInterface {
       const cel = this.doc.createElement("div");
       cel.className = "slot-equip" + (item ? " preenchido" : "");
       cel.title = item ? `${item.nome} (clique p/ desequipar)` : espaco;
+      const iconeSlot = item
+        ? (ICONE_ITEM[item.idDef] ?? ICONE_ESPACO[espaco])
+        : ICONE_ESPACO[espaco];
       cel.innerHTML = item
-        ? `<span>${ICONE_ESPACO[espaco]}</span>`
-        : `<span style="opacity:.3">${ICONE_ESPACO[espaco]}</span>`;
+        ? `<span>${iconeSlot}</span>`
+        : `<span style="opacity:.3">${iconeSlot}</span>`;
       if (item) {
         cel.style.borderColor = COR_RARIDADE[item.raridade] ?? "var(--borda)";
         cel.onclick = () => window.jogo.enviarIntencao({ tipo: "desequipar", slotHeroi: slot, espaco });
@@ -251,17 +489,22 @@ export class PainelInterface {
     return caixa;
   }
 
-  private controlesFormacao(slot: number, atual: PosicaoFormacao): HTMLElement {
+  private controlesFormacao(slot: number, heroi: HeroiMetaSnapshot): HTMLElement {
     const caixa = this.doc.createElement("div");
     caixa.className = "formacao";
     const rotulo = this.doc.createElement("span");
-    rotulo.textContent = "Formação:";
     rotulo.style.color = "var(--texto-fraco)";
+    if (heroi.idClasse === "cavaleiro") {
+      rotulo.textContent = "Formação: Frente (fixo)";
+      caixa.appendChild(rotulo);
+      return caixa;
+    }
+    rotulo.textContent = "Formação:";
     caixa.appendChild(rotulo);
     for (const pos of ["frente", "tras"] as PosicaoFormacao[]) {
       const b = this.doc.createElement("button");
       b.textContent = pos === "frente" ? "Frente" : "Trás";
-      b.disabled = pos === atual;
+      b.disabled = pos === heroi.posicao;
       b.onclick = () => window.jogo.enviarIntencao({ tipo: "definirFormacao", slotHeroi: slot, posicao: pos });
       caixa.appendChild(b);
     }
@@ -540,15 +783,9 @@ export class PainelInterface {
     });
   }
 
-  private abrirPainel(idPainel: string, lado: "esquerda" | "direita", largura: number): void {
-    const painel = this.elemento(idPainel);
-    if (!painel.classList.contains("oculto")) {
-      painel.classList.add("oculto");
-      window.jogo.enviarIntencao({ tipo: "encolherJanela", lado });
-    } else {
-      painel.classList.remove("oculto");
-      window.jogo.enviarIntencao({ tipo: "expandirJanela", lado, larguraPainel: largura });
-    }
+  private abrirPainel(_idPainel: string, lado: "esquerda" | "direita", largura: number): void {
+    // Painéis abrem em janelas Electron separadas; o toggle é gerenciado em main.ts.
+    window.jogo.enviarIntencao({ tipo: "expandirJanela", lado, larguraPainel: largura });
   }
 
   private configurarBotoesCabecalho(): void {
@@ -557,6 +794,112 @@ export class PainelInterface {
     this.doc.getElementById("btn-status")!.onclick = () => this.elemento("modal-status").classList.remove("oculto");
     this.doc.getElementById("btn-config")!.onclick = () => this.elemento("modal-config").classList.remove("oculto");
     this.doc.getElementById("btn-minimizar")!.onclick = () => window.jogo.enviarIntencao({ tipo: "minimizar" });
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Tooltip de comparação (hover sobre item na grade)
+  // ─────────────────────────────────────────────────────────────────────────
+
+  private mostrarTooltipComparacao(item: ItemSnapshot, meta: SnapshotMeta, ancora: HTMLElement): void {
+    this.ocultarTooltip();
+
+    const tt = this.doc.createElement("div");
+    tt.className = "tooltip-comparacao";
+
+    // Cabeçalho do item
+    const header = this.doc.createElement("div");
+    header.className = "tooltip-header";
+    header.style.color = COR_RARIDADE[item.raridade] ?? "var(--texto)";
+    const icone = ICONE_ITEM[item.idDef] ?? ICONE_ESPACO[item.espaco] ?? "❔";
+    header.innerHTML = `<span>${icone} ${item.nome}</span><span class="tooltip-poder">⚡${item.poder}</span>`;
+    tt.appendChild(header);
+
+    const sub = this.doc.createElement("div");
+    sub.className = "tooltip-sub";
+    const grupos = gruposAfins(item.classesAfins);
+    sub.textContent = `${item.raridade} • ${item.espaco}${grupos.length > 0 ? ` • ${grupos.map((g) => NOME_GRUPO[g] ?? g).join("/")}` : ""}`;
+    tt.appendChild(sub);
+
+    // Comparação por herói (afins primeiro)
+    const heroisOrdenados = meta.herois
+      .map((h, slot) => ({ h, slot }))
+      .filter(({ h }) => !!h)
+      .sort((a, b) => {
+        const aA = item.classesAfins.includes(a.h!.idClasse) ? 0 : 1;
+        const bA = item.classesAfins.includes(b.h!.idClasse) ? 0 : 1;
+        return aA - bA;
+      });
+
+    for (const { h, slot } of heroisOrdenados) {
+      if (!h) continue;
+      const afim = item.classesAfins.length === 0 || item.classesAfins.includes(h.idClasse);
+      const atual = meta.inventario.find((i) => i.equipadoPorSlot === slot && i.espaco === item.espaco);
+
+      const secao = this.doc.createElement("div");
+      secao.className = "tooltip-secao" + (afim ? " tooltip-afim" : "");
+
+      const titulo = this.doc.createElement("div");
+      titulo.className = "tooltip-secao-titulo";
+      titulo.textContent = `${afim ? "★ " : ""}${nomeCurto(h.nome)}`;
+      secao.appendChild(titulo);
+
+      if (atual) {
+        const atualIcone = ICONE_ITEM[atual.idDef] ?? ICONE_ESPACO[atual.espaco] ?? "";
+        const atualInfo = this.doc.createElement("div");
+        atualInfo.className = "tooltip-atual";
+        atualInfo.textContent = `Atual: ${atualIcone} ${nomeCurto(atual.nome)} ⚡${atual.poder}`;
+        secao.appendChild(atualInfo);
+
+        // Diferença de poder
+        const diffPoder = item.poder - atual.poder;
+        const linhaPoder = this.doc.createElement("div");
+        linhaPoder.className = "tooltip-stat " + (diffPoder >= 0 ? "stat-pos" : "stat-neg");
+        linhaPoder.textContent = `Poder: ${diffPoder >= 0 ? "+" : ""}${diffPoder}`;
+        secao.appendChild(linhaPoder);
+
+        // Diferença de atributos individuais
+        const mapaNovo = new Map(item.atributos.map((a) => [a.chave, a.valor]));
+        const mapaAtual = new Map(atual.atributos.map((a) => [a.chave, a.valor]));
+        const todasChaves = new Set([...mapaNovo.keys(), ...mapaAtual.keys()]);
+        for (const chave of todasChaves) {
+          const vNovo = mapaNovo.get(chave) ?? 0;
+          const vAtual = mapaAtual.get(chave) ?? 0;
+          const diff = vNovo - vAtual;
+          if (Math.abs(diff) < 0.0001) continue;
+          const linha = this.doc.createElement("div");
+          linha.className = "tooltip-stat " + (diff > 0 ? "stat-pos" : "stat-neg");
+          linha.textContent = formatarAtributo(chave, diff).replace(/^\+/, diff > 0 ? "+" : "");
+          secao.appendChild(linha);
+        }
+      } else {
+        const vazio = this.doc.createElement("div");
+        vazio.className = "tooltip-stat stat-pos";
+        vazio.textContent = "Slot vazio — novo equipamento";
+        secao.appendChild(vazio);
+      }
+      tt.appendChild(secao);
+    }
+
+    // Posicionamento síncrono: visibility:hidden evita flash, offsetWidth força layout
+    tt.style.visibility = "hidden";
+    this.doc.body.appendChild(tt);
+    this.tooltipEl = tt;
+
+    const rect = ancora.getBoundingClientRect();
+    const tw = tt.offsetWidth || 220;
+    const th = tt.offsetHeight || 200;
+    let left = rect.right + 8;
+    let top = rect.top;
+    if (left + tw > window.innerWidth) left = rect.left - tw - 8;
+    if (top + th > window.innerHeight) top = window.innerHeight - th - 8;
+    tt.style.left = `${Math.max(4, left)}px`;
+    tt.style.top = `${Math.max(4, top)}px`;
+    tt.style.visibility = "visible";
+  }
+
+  private ocultarTooltip(): void {
+    this.tooltipEl?.remove();
+    this.tooltipEl = null;
   }
 
   // ─────────────────────────────────────────────────────────────────────────

@@ -122,14 +122,86 @@ button { font-family: inherit; cursor: pointer; }
 .celula-item .afim-badge { position: absolute; bottom: 1px; right: 2px; font-size: 9px; line-height: 1; }
 .celula-item .afim-badge.afim-inutil { opacity: .35; }
 
-.detalhe-item { flex: 1; min-width: 0; }
-.detalhe-nome { font-weight: 800; font-size: 13px; }
+/* ─── Filtros da Mochila ─── */
+.filtros-mochila { display: flex; flex-direction: column; gap: 4px; margin-bottom: 4px; }
+.filtros-linha { display: flex; gap: 3px; flex-wrap: wrap; }
+.filtros-rotulo { font-size: 9px; font-weight: 700; color: var(--texto-fraco); text-transform: uppercase; letter-spacing: 0.6px; }
+.filtros-secao { display: flex; flex-direction: column; gap: 3px; }
+.filtros-subsecao { padding-left: 8px; border-left: 2px solid var(--ouro); margin-left: 2px; }
+.btn-filtro {
+  background: #2c1a08; color: var(--texto-fraco); border: 1px solid var(--borda);
+  border-radius: 4px; padding: 2px 6px; font-size: 10px; cursor: pointer;
+}
+.btn-filtro:hover { border-color: var(--ouro); color: var(--ouro-claro); }
+.btn-filtro.ativo { background: var(--ouro); color: #1a130d; border-color: var(--ouro-claro); font-weight: 700; }
+.btn-filtro-classe { font-size: 10px; padding: 3px 7px; }
+.btn-filtro-classe.ativo { background: var(--destaque); border-color: var(--destaque); color: #fff; }
+.mochila-contador { font-size: 10px; color: var(--texto-fraco); text-align: right; }
+
+/* ─── Tooltip de comparação ─── */
+.tooltip-comparacao {
+  position: fixed; z-index: 9999; pointer-events: none;
+  background: #12100c; border: 1px solid var(--ouro); border-radius: 8px;
+  padding: 8px 10px; min-width: 200px; max-width: 260px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.8); font-size: 11px; color: var(--texto);
+}
+.tooltip-header { display: flex; justify-content: space-between; align-items: baseline; font-weight: 700; font-size: 12px; gap: 6px; }
+.tooltip-poder { color: var(--destaque); white-space: nowrap; }
+.tooltip-sub { color: var(--texto-fraco); font-size: 10px; margin: 2px 0 6px; }
+.tooltip-secao { margin-top: 6px; padding-top: 5px; border-top: 1px solid var(--borda); }
+.tooltip-secao.tooltip-afim { border-top-color: var(--ouro); }
+.tooltip-secao-titulo { font-weight: 700; color: var(--ouro-claro); font-size: 10px; margin-bottom: 3px; }
+.tooltip-atual { font-size: 10px; color: var(--texto-fraco); margin-bottom: 2px; }
+.tooltip-stat { font-size: 11px; padding: 1px 0; }
+.stat-pos { color: #5cd97a; }
+.stat-neg { color: #d95c5c; }
+.celula-item.upgrade { box-shadow: 0 0 0 2px #5cd97a inset; }
+.celula-item .icone-upgrade { position: absolute; top: 1px; right: 2px; font-size: 8px; color: #5cd97a; font-weight: 900; }
+
+/* ─── Herói morto ─── */
+.cartao-party.heroi-morto { opacity: 0.55; border-color: #5a2222; }
+.cartao-party.heroi-morto canvas { filter: grayscale(1); }
+.badge-morto {
+  display: inline-block; background: #7a2a2a; color: #ffaaaa;
+  border-radius: 4px; padding: 1px 5px; font-size: 10px; margin-left: 4px;
+}
+.badge-ressurreicao {
+  font-size: 10px; color: var(--destaque); margin-top: 2px;
+}
+
+.detalhe-item { flex: 1; min-width: 120px; padding: 6px; overflow-y: auto; }
+.detalhe-nome { font-weight: 800; font-size: 13px; line-height: 1.2; }
 .detalhe-sub { color: var(--texto-fraco); font-size: 11px; margin-bottom: 6px; }
-.detalhe-atributos { list-style: none; margin: 0 0 8px; }
-.detalhe-atributos li { color: var(--incomum); font-size: 12px; padding: 1px 0; }
-.detalhe-acoes { display: flex; flex-wrap: wrap; gap: 6px; }
-.detalhe-acoes button, .acao { background: #2c2113; color: var(--ouro-claro); border: 1px solid var(--ouro); border-radius: 5px; padding: 4px 8px; font-size: 11px; }
-.detalhe-acoes button:hover, .acao:hover { background: var(--ouro); color: #1a130d; }
+.detalhe-atributos { list-style: none; margin: 6px 0 0; padding: 0; }
+.detalhe-atributos li { color: var(--incomum); font-size: 11px; padding: 1px 0; }
+.detalhe-acoes { display: flex; flex-direction: column; gap: 4px; margin-bottom: 6px; }
+.acao { background: #2c2113; color: var(--ouro-claro); border: 1px solid var(--ouro); border-radius: 5px; padding: 4px 8px; font-size: 11px; }
+.acao:hover { background: var(--ouro); color: #1a130d; }
+
+/* Equip cards */
+.detalhe-equip-titulo { font-size: 10px; font-weight: 800; color: var(--ouro); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
+.equip-card {
+  display: flex; align-items: center; gap: 6px;
+  background: #1a1308; border: 1px solid var(--borda); border-radius: 6px; padding: 5px 7px;
+}
+.equip-card.equip-afim { border-color: var(--ouro); background: #221a07; }
+.equip-card-info { flex: 1; min-width: 0; }
+.equip-heroi-nome { display: block; font-size: 11px; font-weight: 700; color: var(--texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.equip-slot-atual { display: block; font-size: 10px; color: var(--texto-fraco); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.equip-diff-pos { color: #5cd97a; font-weight: 700; }
+.equip-diff-neg { color: #d95c5c; }
+.btn-equipar {
+  flex-shrink: 0; background: #2c2113; color: var(--ouro-claro);
+  border: 1px solid var(--borda); border-radius: 5px; padding: 4px 8px; font-size: 11px; cursor: pointer; white-space: nowrap;
+}
+.btn-equipar:hover { background: #4a3520; border-color: var(--ouro); }
+.btn-equipar.btn-equipar-afim { background: var(--ouro); color: #1a130d; border-color: var(--ouro-claro); font-weight: 700; }
+.btn-equipar.btn-equipar-afim:hover { background: var(--ouro-claro); }
+.btn-vender-item {
+  width: 100%; background: #1e0e0e; color: #c06060;
+  border: 1px solid #5a2222; border-radius: 5px; padding: 4px; font-size: 11px; cursor: pointer;
+}
+.btn-vender-item:hover { background: #3a1010; border-color: #8a3030; }
 
 /* ---------- Party / paperdoll ---------- */
 .cartao-party {
@@ -256,3 +328,86 @@ button { font-family: inherit; cursor: pointer; }
 .vel-botoes { display: flex; gap: 4px; }
 .vel-botoes button { background: #2c2113; color: var(--ouro-claro); border: 1px solid var(--ouro); border-radius: 5px; padding: 2px 10px; font-size: 12px; }
 .vel-botoes button.ativo { background: var(--ouro); color: #1a130d; }
+
+/* ─── MODO PAINEL (janela flutuante separada) ─── */
+body.modo-painel #splash { display: none !important; }
+body.modo-painel #zona-jogo { display: none !important; }
+body.modo-painel .modal { display: none !important; }
+
+body.modo-painel #janela {
+  display: block;
+  height: 100vh;
+  overflow: hidden;
+}
+body.modo-painel .painel-lateral {
+  width: 100% !important;
+  height: 100vh;
+  border: none;
+  border-radius: 0;
+}
+body.modo-painel .painel-lateral.oculto { display: none !important; }
+body.modo-painel .painel-titulo {
+  -webkit-app-region: drag;
+  flex-shrink: 0;
+}
+body.modo-painel .painel-titulo button { -webkit-app-region: no-drag; }
+
+/* Corpo genérico: sem padding próprio, ocupa o restante */
+body.modo-painel .painel-corpo {
+  padding: 0;
+  height: calc(100vh - 36px);
+  overflow: hidden;
+  flex: 1;
+}
+
+/* ── MOCHILA: grade (esquerda) + detalhe (direita) ── */
+body.modo-painel .mochila-corpo {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  overflow: hidden;
+}
+body.modo-painel .mochila-esquerda {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  overflow: hidden;
+}
+body.modo-painel .grade-itens {
+  width: auto;
+  flex: 1;
+  max-height: none;
+  overflow-y: auto;
+  grid-template-columns: repeat(auto-fill, minmax(58px, 1fr));
+}
+body.modo-painel .celula-item { min-height: 58px; }
+body.modo-painel .celula-item .icone { font-size: 24px; }
+body.modo-painel .celula-item .poder { font-size: 9px; }
+body.modo-painel .detalhe-item {
+  width: 200px;
+  flex-shrink: 0;
+  border-left: 1px solid var(--borda);
+  height: 100%;
+  overflow-y: auto;
+  padding: 10px 8px;
+  min-width: 170px;
+}
+
+/* ── PORTAL: abas (topo) + mapa (resto, scrollável) ── */
+body.modo-painel .portal-corpo {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  background: linear-gradient(160deg, #d9c39a, #b89a63);
+}
+body.modo-painel .portal-corpo .abas-ato {
+  flex-shrink: 0;
+}
+body.modo-painel .portal-corpo .mapa-nos {
+  flex: 1;
+  overflow-y: auto;
+}

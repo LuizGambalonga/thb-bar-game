@@ -56,9 +56,9 @@ export interface DefHabilidade {
   id: string;
   nome: string;
   cooldownTicks: number;
-  tipo: "dano" | "cura" | "buff";
+  tipo: "dano" | "cura" | "buff" | "ressuscitar";
   potencia: number;
-  alvo: "menorVidaAliado" | "inimigoFrente" | "todosInimigos" | "proprio";
+  alvo: "menorVidaAliado" | "inimigoFrente" | "todosInimigos" | "proprio" | "aliadoMorto";
 }
 
 export interface DefHeroi {
@@ -83,6 +83,10 @@ export interface DefMonstro {
   idTabelaEspolio: string;
   xpConcedido: number;
   projetil?: TipoProjetil;
+  /** Fração de arena por tick (0..1). Default no motor. */
+  velocidadeMovimento?: number;
+  /** Distância de ataque em fração de arena. Default no motor. */
+  alcanceAtaque?: number;
 }
 
 export interface DefOnda {

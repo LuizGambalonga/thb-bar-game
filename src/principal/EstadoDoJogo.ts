@@ -53,6 +53,15 @@ export class EstadoDoJogo {
       } else if (evento.tipo === "morteInimigo") {
         const dropEvento = this.processarMorteInimigo(evento.idTabelaEspolio, evento.xp);
         if (dropEvento) eventosSnapshot.push(dropEvento);
+      } else if (evento.tipo === "morteHeroi") {
+        const heroi = this.salvo.party.slots[evento.slot];
+        if (heroi) heroi.vivo = false;
+      } else if (evento.tipo === "ressurreicao") {
+        const heroi = this.salvo.party.slots[evento.slot];
+        if (heroi) heroi.vivo = true;
+        eventosSnapshot.push({ tipo: "ressurreicao", idHeroi: evento.id });
+      } else if (evento.tipo === "partyDerrotada") {
+        for (const heroi of this.heroisAtivos()) heroi.vivo = true;
       } else if (evento.tipo === "faseConcluida") {
         this.processarFaseConcluida();
       }
@@ -213,7 +222,8 @@ export class EstadoDoJogo {
       vidaAtual: def.atributosBase.vida,
       equipamento: {},
     };
-    this.salvo.party.formacao[slotHeroi] = this.salvo.party.formacao[slotHeroi] ?? "frente";
+    // Cavaleiro sempre vai para a frente; demais classes vão para trás por padrão
+    this.salvo.party.formacao[slotHeroi] = idClasse === "cavaleiro" ? "frente" : "tras";
     this.reconstruirMotorMantendoOnda();
   }
 
@@ -239,7 +249,7 @@ export class EstadoDoJogo {
       estado: this.motor.estadoAtual,
       indiceOnda: this.motor.indiceOndaAtual,
       totalOndas: this.motor.totalOndas,
-      herois: herois.map((c, i) => {
+      herois: herois.map((c) => {
         const heroi = this.salvo.party.slots[c.slot];
         const idClasse = heroi?.idClasse ?? "cavaleiro";
         return {
@@ -249,17 +259,16 @@ export class EstadoDoJogo {
           raridadeEquip: heroi ? this.melhorRaridadeEquip(heroi) : null,
           temArma: !!heroi?.equipamento.arma,
           vidaPct: c.vidaMax > 0 ? Math.max(0, c.vidaAtual / c.vidaMax) : 0,
-          x: 0.12 + i * 0.08, elemento: c.elemento,
+          x: c.posicaoX, elemento: c.elemento,
         };
       }),
-      inimigos: inimigos.map((c, i) => ({
+      inimigos: inimigos.map((c) => ({
         id: c.id, nome: c.nome, icone: c.icone, ehHeroi: false, vivo: c.vivo,
         spriteId: `monstro:${c.idMonstro ?? "bit-slime"}`,
         projetil: c.idMonstro ? obterMonstro(c.idMonstro).projetil ?? null : null,
         raridadeEquip: null, temArma: false,
         vidaPct: c.vidaMax > 0 ? Math.max(0, c.vidaAtual / c.vidaMax) : 0,
-        x: 0.55 + (inimigos.length > 1 ? (i / (inimigos.length - 1)) * 0.38 : 0),
-        elemento: c.elemento,
+        x: c.posicaoX, elemento: c.elemento,
       })),
       eventos,
     };

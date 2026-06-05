@@ -61,6 +61,7 @@ export const HEROIS: DefHeroi[] = [
       multiplicadorCritico: 1.5, velocidadeAtaque: 1.0, rouboDeVida: 0.1, afinidades: {},
     },
     habilidades: [
+      { id: "ressuscitar", nome: "Ressuscitar", cooldownTicks: 1200, tipo: "ressuscitar", potencia: 0.30, alvo: "aliadoMorto" },
       { id: "coletar", nome: "Coletar", cooldownTicks: 45, tipo: "cura", potencia: 1.5, alvo: "menorVidaAliado" },
     ],
     desbloqueio: { custoOuro: 5000 },

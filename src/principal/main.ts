@@ -45,8 +45,8 @@ function iniciar(): void {
     aoSair: () => repositorio.salvar(estado.serializar(Date.now())),
   });
 
-  const enviarCombate = (s: SnapshotCombate) => gerenciador.enviar("jogo:snapshotCombate", s);
-  const enviarMeta = (s: SnapshotMeta) => gerenciador.enviar("jogo:snapshotMeta", s);
+  const enviarCombate = (s: SnapshotCombate) => gerenciador.emitirParaTodos("jogo:snapshotCombate", s);
+  const enviarMeta = (s: SnapshotMeta) => gerenciador.emitirParaTodos("jogo:snapshotMeta", s);
   const laco = new LacoDeJogo(estado, enviarCombate, enviarMeta);
 
   ipcMain.on(CANAL_INTENCAO, (_evento, intencao: Intencao) => {
@@ -60,11 +60,13 @@ function iniciar(): void {
       return;
     }
     if (intencao.tipo === "expandirJanela") {
-      gerenciador.expandir(intencao.lado, intencao.larguraPainel);
+      const painel = intencao.lado === "esquerda" ? "mochila" : "portal";
+      gerenciador.abrirOuFecharPainel(painel);
       return;
     }
     if (intencao.tipo === "encolherJanela") {
-      gerenciador.encolher(intencao.lado);
+      const painel = intencao.lado === "esquerda" ? "mochila" : "portal";
+      gerenciador.fecharPainel(painel);
       return;
     }
     estado.aplicarIntencao(intencao);

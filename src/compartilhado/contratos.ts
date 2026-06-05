@@ -50,7 +50,8 @@ export type EventoSnapshot =
   | { tipo: "habilidade"; idAutor: string }
   | { tipo: "morte"; id: string }
   | { tipo: "drop"; raridade: Raridade }
-  | { tipo: "mochilaCheia" };
+  | { tipo: "mochilaCheia" }
+  | { tipo: "ressurreicao"; idHeroi: string };
 
 export interface SnapshotCombate {
   tick: number;
@@ -84,6 +85,7 @@ export interface HabilidadeSnapshot {
   nome: string;
   tipo: string;
   cooldownSeg: number;
+  cooldownRestanteSeg?: number; // apenas para habilidades com cooldown longo (ressuscitar)
 }
 
 export interface HeroiMetaSnapshot {
