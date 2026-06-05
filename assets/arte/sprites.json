@@ -1,0 +1,90 @@
+{
+  "heroiTemplate": {
+    "largura": 14,
+    "altura": 16,
+    "paletaBase": { "o": "#0d0f1a", "s": "#f1c27d", "k": "#cd9b5f", "e": "#0a0c16", "w": "#dde3f0", "m": "#8a90a6" },
+    "parado": [
+      ["......dd......", ".....oaao.....", "....odaado....", "...oaaaaaao...", "...oassssao...", "...oaseesao...", "...oassksao...", "....odaao.....", "..mwoaaaowm...", "..woaaddaaow..", "..ooaaaaaoo.m.", "...oaaaaao.m..", "...oaaaaao.m..", "...oa..ao.....", "...oo..oo.....", "..ooo..ooo...."],
+      ["......dd......", ".....oaao.....", "....odaado....", "...oaaaaaao...", "...oassssao...", "...oaseesao...", "...oassksao...", "....odaao.....", "..mwoaaaowm...", "..woaaddaaow.m", "..ooaaaaaoo.m.", "...oaaaaaom...", "...oaaaaao....", "...oaa.ao.....", "..oo...oo.....", "..ooo.ooo....."]
+    ],
+    "atacar": [
+      ["......dd......", ".....oaao.....", "....odaado....", "...oaaaaaao...", "...oassssao...", "...oaseesao..m", "...oassksao.m.", "....odaaoom...", "..mwoaaaooomm.", "..woaaddaaowww", "..ooaaaaaoowww", "...oaaaaaoo...", "...oaaaaao....", "...oaaao......", "..oo..ooo.....", ".ooo...ooo...."]
+    ]
+  },
+  "classes": {
+    "cavaleiro": { "claro": "#6aa0ff", "escuro": "#3a63b8" },
+    "patrulheiro": { "claro": "#6ee089", "escuro": "#3a9a55" },
+    "feiticeira": { "claro": "#c06cff", "escuro": "#7a3ab8" },
+    "sacerdote": { "claro": "#ffd96a", "escuro": "#c79a3a" },
+    "cacador": { "claro": "#6cf2ff", "escuro": "#3aa9b8" },
+    "carrasco": { "claro": "#ff6c6c", "escuro": "#b83a3a" }
+  },
+  "monstros": {
+    "bit-slime": {
+      "largura": 12, "altura": 12,
+      "paleta": { "o": "#0f2417", "g": "#5cd97a", "h": "#9bf0b0", "e": "#0a0c16" },
+      "parado": [
+        ["............", "....oooo....", "...oggggo...", "..oghgggho..", "..ogeggego..", "..oggggggo..", "..ogg..ggo..", "..oggggggo..", ".oggggggggo.", ".oghgggghgo.", ".oggggggggo.", "..oooooooo.."],
+        ["............", "............", "...oggggo...", "..oghgggho..", "..ogeggego..", "..oggggggo..", ".oggggggggo.", ".oghgggghgo.", ".oggggggggo.", ".oggggggggo.", ".oooooooooo.", "............"]
+      ],
+      "atacar": [
+        ["............", "...oooo.....", "..oggggo....", ".oghgggho...", ".ogeeggo....", ".oggggggo...", "ogg..gggo...", "ogggggggo...", "oggggggggo..", "oghggggggo..", ".oooooooo...", "............"]
+      ]
+    },
+    "icone-zumbi": {
+      "largura": 12, "altura": 11,
+      "paleta": { "o": "#142a12", "z": "#7bb661", "h": "#a7d98c", "r": "#ff5c5c", "g": "#3c5e2c" },
+      "parado": [
+        ["...oooo.....", "..ozzzzo....", "..ozhhzzo...", "..ozrzzrzo..", "..ozzzzzzo..", "...ozggzo...", "z.ozzzzzzo.z", "zoozzzzzzooz", "..ozzzzzzo..", "..ozz..zzo..", "..oo....oo.."],
+        ["...oooo.....", "..ozzzzo....", "..ozhhzzo...", "..ozrzzrzo..", "..ozzzzzzo..", "...ozggzo...", "z.ozzzzzzo.z", "zoozzzzzzooz", "..ozzzzzzo..", "..ozz..zzo..", "..oo....oo.."]
+      ],
+      "atacar": [
+        ["...oooo.....", "..ozzzzo....", ".ozhhzzo....", ".ozrzzrzo...", ".ozzzzzzo...", "..ozggzo....", "ooozzzzzzo..", "zzozzzzzzo..", "..ozzzzzzo..", "..ozz.zzo...", "..oo..oo...."]
+      ]
+    },
+    "cursor-selvagem": {
+      "largura": 12, "altura": 12,
+      "paleta": { "o": "#0a0c16", "w": "#ffffff" },
+      "parado": [
+        ["o...........", "oo..........", "owo.........", "owwo........", "owwwo.......", "owwwwo......", "owwwwwo.....", "owwwwwwo....", "owwwooooo...", "owwo.oo.....", "owo..owo....", "oo...oo....."],
+        ["o...........", "oo..........", "owo.........", "owwo........", "owwwo.......", "owwwwo......", "owwwwwo.....", "owwwwwwo....", "owwwooooo...", "owwo.oo.....", "owo..owo....", "oo...oo....."]
+      ],
+      "atacar": [
+        ["o...........", "oo..........", "owo.........", "owwo........", "owwwo.......", "owwwwo......", "owwwwwo.....", "owwwwwwo....", "owwwooooo...", "owwo.oo.....", "owo..owo....", "oo...oo....."]
+      ]
+    },
+    "popup": {
+      "largura": 12, "altura": 8,
+      "paleta": { "o": "#1a2240", "b": "#5c8bff", "w": "#dfe6ff", "x": "#ff5c5c" },
+      "parado": [
+        ["oooooooooo..", "obbbbbbbxo..", "owwwwwwwwo..", "owwwwwwwwo..", "owwwooowwo..", "owwwwwwwwo..", "owwwwwwwwo..", "oooooooooo.."],
+        ["oooooooooo..", "obbbbbbbxo..", "owwwwwwwwo..", "owwwwwwwwo..", "owwwooowwo..", "owwwwwwwwo..", "owwwwwwwwo..", "oooooooooo.."]
+      ],
+      "atacar": [
+        ["oooooooooo..", "obbbbbbbxo..", "owwwwwwwwo..", "owwwooowwo..", "owwwooowwo..", "owwwwwwwwo..", "owwwwwwwwo..", "oooooooooo.."]
+      ]
+    },
+    "a-lixeira": {
+      "largura": 12, "altura": 10,
+      "paleta": { "o": "#11151f", "g": "#8a96a8", "w": "#c4ccda" },
+      "parado": [
+        [".oo....oo...", "..oooooo....", ".oooooooo...", ".ogggggggo..", ".ogwg.gwgo..", ".og.g.g.go..", ".og.g.g.go..", ".og.g.g.go..", ".oggggggggo.", "..oooooooo.."],
+        [".oo....oo...", "..oooooo....", ".oooooooo...", ".ogggggggo..", ".ogwg.gwgo..", ".og.g.g.go..", ".og.g.g.go..", ".og.g.g.go..", ".oggggggggo.", "..oooooooo.."]
+      ],
+      "atacar": [
+        [".oo....oo...", "..oooooo....", ".oooooooo...", ".ogggggggo..", ".ogwg.gwgo..", ".og.g.g.go..", ".og.g.g.go..", ".og.g.g.go..", ".oggggggggo.", "..oooooooo.."]
+      ]
+    },
+    "guardiao-do-espaco": {
+      "largura": 12, "altura": 11,
+      "paleta": { "o": "#11151f", "m": "#9aa0c0", "c": "#5cf2ff", "r": "#ff5c5c", "w": "#ffd96a" },
+      "parado": [
+        ["..o....o....", "..o....o....", ".oooooooo...", ".ommmmmmmo..", ".omcmmcmmo..", ".ommmmmmmo..", ".ommooommo..", ".ooooooooo..", "moommmmoomm.", ".ommmmmmmo..", ".oo....oo..."],
+        ["..o....o....", "..o....o....", ".oooooooo...", ".ommmmmmmo..", ".omcmmcmmo..", ".ommmmmmmo..", ".ommooommo..", ".ooooooooo..", "moommmmoomm.", ".ommmmmmmo..", ".oo....oo..."]
+      ],
+      "atacar": [
+        ["..o....o....", "..o....o....", ".oooooooo...", ".ommmmmmmo..", ".omrmmrmmo..", ".ommmmmmmo..", ".ommwwwmmo..", ".ooooooooo..", "mmoommmmoo.m", ".ommmmmmmo..", ".ooo...ooo.."]
+      ]
+    }
+  }
+}

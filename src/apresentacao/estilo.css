@@ -1,0 +1,258 @@
+:root {
+  --ouro: #c9a24b;
+  --ouro-claro: #f0d488;
+  --madeira: #1d160f;
+  --madeira-2: #2a1f15;
+  --painel: #14110c;
+  --borda: #4a3a22;
+  --texto: #ece3cf;
+  --texto-fraco: #a08c66;
+  --destaque: #6cf2c9;
+  --comum: #b8c0d0; --incomum: #5cd97a; --raro: #5c8bff; --epico: #b15cff;
+  --lendario: #ff9f43; --imortal: #ff5c5c; --arcano: #5cf2ff; --cosmico: #ff7ce8;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  height: 100%; background: var(--madeira); color: var(--texto);
+  font-family: "Segoe UI", system-ui, sans-serif; font-size: 12px; user-select: none; overflow: hidden;
+}
+button { font-family: inherit; cursor: pointer; }
+
+/* ─── Layout base: linha com painéis laterais ─── */
+#janela { display: flex; flex-direction: row; height: 100vh; overflow: hidden; }
+#zona-jogo { display: flex; flex-direction: column; width: 520px; flex-shrink: 0; }
+#arena { display: block; width: 520px; background: #07060c; image-rendering: pixelated; }
+
+#cabecalho {
+  display: flex; align-items: center; gap: 10px; padding: 4px 8px;
+  background: linear-gradient(180deg, #2a1f15, #1a130d);
+  border-bottom: 2px solid var(--ouro); -webkit-app-region: drag;
+}
+#cabecalho button, .barra-botoes, .modal { -webkit-app-region: no-drag; }
+#titulo { font-weight: 700; color: var(--ouro-claro); letter-spacing: .5px; }
+.info { color: var(--texto-fraco); }
+.ouro #info-ouro { color: var(--ouro-claro); font-weight: 700; }
+.pausa { color: #ff7a7a; font-weight: 700; }
+.barra-botoes { margin-left: auto; display: flex; gap: 4px; }
+.barra-botoes button {
+  background: #2c2113; color: var(--ouro-claro); border: 1px solid var(--ouro);
+  border-radius: 5px; padding: 2px 7px; font-size: 14px;
+}
+.barra-botoes button:hover { background: var(--ouro); color: #1a130d; }
+#btn-sair { color: #ff8a8a; border-color: #7a2a2a; }
+#btn-sair:hover { background: #ff5c5c; color: #1a130d; }
+
+#rodape {
+  display: flex; justify-content: space-between; padding: 3px 10px;
+  background: #120d08; border-top: 1px solid var(--borda); color: var(--texto-fraco); font-size: 11px;
+}
+
+/* ---------- Splash ---------- */
+.splash {
+  position: fixed; inset: 0; z-index: 50;
+  background: radial-gradient(circle at 50% 35%, #2a1f15, #0a0805 70%);
+  display: flex; align-items: center; justify-content: center;
+}
+.splash.oculto { display: none; }
+.splash-conteudo { text-align: center; }
+.logo {
+  font-size: 40px; font-weight: 900; letter-spacing: 2px; line-height: .95;
+  color: var(--ouro-claro); text-shadow: 0 3px 0 #6e4f1d, 0 0 18px rgba(201,162,75,.5);
+}
+.logo span { display: block; font-size: 16px; color: var(--texto-fraco); letter-spacing: 6px; }
+.sub { color: var(--texto-fraco); margin: 8px 0 22px; }
+.splash-conteudo button {
+  display: block; width: 200px; margin: 8px auto; padding: 10px;
+  background: linear-gradient(180deg, var(--ouro-claro), var(--ouro)); color: #2a1d08;
+  border: none; border-radius: 8px; font-weight: 800; font-size: 15px;
+}
+.splash-conteudo button.secundario { background: #2c2113; color: var(--ouro-claro); border: 1px solid var(--ouro); }
+
+/* ---------- Modais ornamentados ---------- */
+.modal {
+  position: fixed; inset: 0; z-index: 40; background: rgba(0,0,0,.72);
+  display: flex; align-items: center; justify-content: center;
+}
+.modal.oculto { display: none; }
+.janela-ornada {
+  width: 360px; max-width: 94vw; max-height: 90vh; display: flex; flex-direction: column;
+  background: linear-gradient(180deg, #221913, var(--painel));
+  border: 3px solid var(--ouro); border-radius: 10px;
+  box-shadow: 0 0 0 2px #1a130d, 0 10px 40px rgba(0,0,0,.6); overflow: hidden;
+}
+.janela-ornada.larga { width: 440px; }
+.janela-titulo {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 10px; background: linear-gradient(180deg, #3a2c19, #241a10);
+  border-bottom: 2px solid var(--ouro); color: var(--ouro-claro); font-weight: 800; letter-spacing: 1px;
+}
+.fechar-modal { background: #5a1f1f; color: #ffd; border: 1px solid #8a3a3a; border-radius: 5px; padding: 1px 7px; }
+.janela-corpo { padding: 10px; overflow-y: auto; }
+.botao-primario {
+  margin-top: 12px; background: linear-gradient(180deg, var(--ouro-claro), var(--ouro));
+  color: #2a1d08; border: none; border-radius: 6px; padding: 6px 18px; font-weight: 800;
+}
+.secao-titulo { color: var(--ouro-claro); font-weight: 700; margin: 12px 0 6px; border-bottom: 1px solid var(--borda); padding-bottom: 2px; }
+
+/* ---------- Stash (grade) ---------- */
+.mochila-corpo { display: flex; gap: 10px; }
+.mochila-esquerda { display: flex; flex-direction: column; gap: 6px; }
+.acoes-lote { display: flex; flex-direction: column; gap: 4px; }
+.btn-lote {
+  width: 100%; background: #2c1a08; color: var(--ouro-claro); border: 1px solid var(--borda);
+  border-radius: 5px; padding: 4px 8px; font-size: 10px; text-align: left; cursor: pointer;
+}
+.btn-lote:hover { background: #4a2e10; border-color: var(--ouro); }
+.grade-itens {
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px;
+  width: 220px; max-height: 280px; overflow-y: auto; align-content: start;
+  background: #0d0a06; padding: 6px; border: 1px solid var(--borda); border-radius: 6px;
+}
+.mochila-vazia { grid-column: 1 / -1; color: var(--texto-fraco); }
+.celula-item {
+  position: relative; aspect-ratio: 1; background: #1a130d; color: var(--texto);
+  border: 2px solid var(--comum); border-radius: 5px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.celula-item .icone { font-size: 18px; line-height: 1; }
+.celula-item .poder { font-size: 8px; color: var(--texto-fraco); }
+.celula-item.selecionada { box-shadow: 0 0 0 2px var(--ouro-claro) inset; }
+.celula-item .ponto-equipado { position: absolute; top: 2px; right: 2px; width: 6px; height: 6px; border-radius: 50%; background: var(--destaque); }
+.celula-item .estrela { position: absolute; top: 1px; left: 2px; font-size: 9px; }
+.celula-item .afim-badge { position: absolute; bottom: 1px; right: 2px; font-size: 9px; line-height: 1; }
+.celula-item .afim-badge.afim-inutil { opacity: .35; }
+
+.detalhe-item { flex: 1; min-width: 0; }
+.detalhe-nome { font-weight: 800; font-size: 13px; }
+.detalhe-sub { color: var(--texto-fraco); font-size: 11px; margin-bottom: 6px; }
+.detalhe-atributos { list-style: none; margin: 0 0 8px; }
+.detalhe-atributos li { color: var(--incomum); font-size: 12px; padding: 1px 0; }
+.detalhe-acoes { display: flex; flex-wrap: wrap; gap: 6px; }
+.detalhe-acoes button, .acao { background: #2c2113; color: var(--ouro-claro); border: 1px solid var(--ouro); border-radius: 5px; padding: 4px 8px; font-size: 11px; }
+.detalhe-acoes button:hover, .acao:hover { background: var(--ouro); color: #1a130d; }
+
+/* ---------- Party / paperdoll ---------- */
+.cartao-party {
+  background: #16100a; border: 1px solid var(--borda); border-radius: 8px; padding: 8px; margin-bottom: 8px;
+  display: flex; gap: 10px;
+}
+.cartao-party canvas { background: #0a0805; border: 1px solid var(--borda); border-radius: 6px; image-rendering: pixelated; }
+.party-info { flex: 1; min-width: 0; }
+.party-info .nome { font-weight: 700; color: var(--ouro-claro); }
+.party-info .linha { color: var(--texto-fraco); display: flex; gap: 10px; }
+.paperdoll { display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
+.slot-equip {
+  width: 30px; height: 30px; background: #0d0a06; border: 1px solid var(--borda); border-radius: 5px;
+  display: flex; align-items: center; justify-content: center; font-size: 16px; position: relative;
+}
+.slot-equip.preenchido { cursor: pointer; }
+.slot-equip .rotulo { position: absolute; bottom: -1px; right: 1px; font-size: 7px; color: var(--texto-fraco); }
+.formacao { margin-top: 6px; display: flex; gap: 4px; align-items: center; }
+.formacao button { background: #2c2113; color: var(--ouro-claro); border: 1px solid var(--ouro); border-radius: 5px; padding: 2px 8px; font-size: 11px; }
+.formacao button:disabled { background: var(--ouro); color: #1a130d; }
+.trocar-heroi { margin-top: 6px; width: 100%; background: #0d0a06; color: var(--texto); border: 1px solid var(--borda); border-radius: 5px; padding: 3px; }
+.vazio-slot { color: var(--texto-fraco); font-style: italic; }
+
+.seletor-herois { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.carta-heroi { background: #16100a; border: 1px solid var(--borda); border-radius: 8px; padding: 6px; text-align: center; }
+.carta-heroi.em-uso { border-color: var(--destaque); }
+.carta-heroi canvas { background: #0a0805; border-radius: 5px; image-rendering: pixelated; }
+.carta-heroi .nome { font-size: 11px; font-weight: 700; color: var(--ouro-claro); }
+.carta-heroi .papel { font-size: 10px; color: var(--texto-fraco); }
+.carta-heroi .stats { font-size: 10px; color: var(--texto-fraco); margin-top: 2px; }
+
+/* ---------- Portal / mapa ---------- */
+.portal-corpo { background: linear-gradient(160deg, #d9c39a, #b89a63); border-radius: 6px; }
+.mapa-nos { display: flex; flex-direction: column; gap: 0; padding: 6px; }
+.no-fase {
+  display: flex; align-items: center; gap: 10px; padding: 8px 10px; position: relative;
+  color: #3a2a12;
+}
+.no-fase:not(:last-child)::after {
+  content: ""; position: absolute; left: 23px; top: 36px; height: 14px; width: 2px;
+  background: repeating-linear-gradient(180deg, #6e4f1d 0 4px, transparent 4px 8px);
+}
+.no-bolha {
+  width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-weight: 800; border: 2px solid #6e4f1d; background: #efe2c0; flex-shrink: 0;
+}
+.no-fase.limpa .no-bolha { background: #7bbf6a; color: #14300c; }
+.no-fase.atual .no-bolha { background: var(--ouro); color: #1a130d; box-shadow: 0 0 0 3px rgba(201,162,75,.4); }
+.no-fase.bloqueada { opacity: .55; }
+.no-fase.bloqueada .no-bolha { background: #b8a982; }
+.no-info { flex: 1; }
+.no-info .nome { font-weight: 700; }
+.no-info .estado { font-size: 10px; }
+.no-fase button { background: #6e4f1d; color: #ffeec4; border: none; border-radius: 5px; padding: 3px 10px; font-size: 11px; }
+.no-fase.bloqueada button { background: #9a8a66; }
+.act-aviso { text-align: center; color: #5a4520; font-size: 11px; padding: 6px; }
+.abas-ato { display: flex; gap: 2px; padding: 6px 6px 0; background: #c4ad7a; }
+.aba-ato {
+  padding: 4px 12px; border: 1px solid #7a5a20; border-bottom: none; border-radius: 5px 5px 0 0;
+  background: #dcc88a; color: #3a2a12; font-size: 11px; font-weight: 700; cursor: pointer;
+}
+.aba-ato.ativa { background: #d9c39a; border-bottom: 1px solid #d9c39a; }
+.aba-ato:disabled { opacity: .5; cursor: default; }
+
+/* ─── Painéis laterais (Mochila / Portal) ─── */
+.painel-lateral {
+  display: flex; flex-direction: column;
+  background: linear-gradient(180deg, #221913, var(--painel));
+  border: 2px solid var(--ouro);
+  overflow: hidden; flex-shrink: 0;
+}
+.painel-lateral.oculto { display: none; }
+#painel-mochila { width: 320px; border-right: none; }
+#painel-portal  { width: 260px; border-left: none; }
+.painel-titulo {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 5px 10px; background: linear-gradient(180deg, #3a2c19, #241a10);
+  border-bottom: 2px solid var(--ouro); color: var(--ouro-claro); font-weight: 800;
+  -webkit-app-region: no-drag;
+}
+.fechar-painel { background: #5a1f1f; color: #ffd; border: 1px solid #8a3a3a; border-radius: 5px; padding: 1px 7px; cursor: pointer; }
+.painel-corpo { padding: 8px; overflow-y: auto; flex: 1; }
+
+/* ─── Botão minimizar ─── */
+#btn-minimizar { color: #a0d0ff; border-color: #2a4a7a; }
+#btn-minimizar:hover { background: #3a6ab8; color: #fff; }
+
+/* ─── STATUS ─── */
+.abas-status { display: flex; gap: 4px; margin-bottom: 10px; flex-wrap: wrap; }
+.aba-status-btn {
+  background: #2c2113; color: var(--texto-fraco); border: 1px solid var(--borda);
+  border-radius: 5px; padding: 3px 10px; font-size: 11px; cursor: pointer;
+}
+.aba-status-btn.ativa { background: var(--ouro); color: #1a130d; border-color: var(--ouro-claro); }
+.status-heroi { display: flex; gap: 14px; }
+.status-sprite { flex-shrink: 0; }
+.status-sprite canvas { background: #0a0805; border: 1px solid var(--borda); border-radius: 6px; image-rendering: pixelated; display: block; }
+.status-dados { flex: 1; min-width: 0; }
+.status-nome { font-size: 14px; font-weight: 800; color: var(--ouro-claro); margin-bottom: 2px; }
+.status-papel { font-size: 11px; color: var(--texto-fraco); margin-bottom: 8px; }
+.status-barra-exp {
+  height: 8px; background: #1a130d; border: 1px solid var(--borda); border-radius: 4px; margin-bottom: 8px; overflow: hidden;
+}
+.status-barra-exp-fill { height: 100%; background: linear-gradient(90deg, #6cf2c9, #3ab8a0); border-radius: 4px; }
+.status-linha { display: flex; justify-content: space-between; font-size: 11px; margin: 2px 0; }
+.status-linha .rotulo { color: var(--texto-fraco); }
+.status-linha .valor { color: var(--texto); font-weight: 700; }
+.status-habilidades { margin-top: 10px; }
+.habilidade-card {
+  background: #1a130d; border: 1px solid var(--borda); border-radius: 6px; padding: 5px 8px;
+  margin-bottom: 4px; display: flex; align-items: center; gap: 8px;
+}
+.habilidade-card .habil-nome { font-weight: 700; color: var(--ouro-claro); }
+.habilidade-card .habil-tipo { font-size: 10px; color: var(--texto-fraco); }
+.habilidade-card .habil-cd { margin-left: auto; color: var(--destaque); font-size: 11px; }
+
+/* ─── CONFIGURAÇÕES ─── */
+.config-secao { margin-bottom: 14px; }
+.config-secao-titulo { color: var(--ouro-claro); font-weight: 700; margin-bottom: 8px; border-bottom: 1px solid var(--borda); padding-bottom: 3px; }
+.config-linha { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; font-size: 12px; }
+.config-linha .rotulo { color: var(--texto-fraco); }
+.config-linha select, .config-linha input[type=range] { background: #1a130d; color: var(--texto); border: 1px solid var(--borda); border-radius: 4px; padding: 2px 6px; }
+.config-preview { background: #1a130d; border: 1px solid var(--borda); border-radius: 6px; padding: 8px; font-size: 11px; color: var(--incomum); margin-top: 6px; }
+.vel-botoes { display: flex; gap: 4px; }
+.vel-botoes button { background: #2c2113; color: var(--ouro-claro); border: 1px solid var(--ouro); border-radius: 5px; padding: 2px 10px; font-size: 12px; }
+.vel-botoes button.ativo { background: var(--ouro); color: #1a130d; }

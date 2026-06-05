@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Heróis da Barra</title>
+    <link rel="stylesheet" href="./estilo.css" />
+  </head>
+  <body>
+    <!-- Splash / abertura -->
+    <div id="splash" class="splash">
+      <div class="splash-conteudo">
+        <div class="logo">HERÓIS<span>da</span>BARRA</div>
+        <div class="sub">Idle ARPG · O Espaço do Usuário</div>
+        <button id="btn-jogar">▶ JOGAR</button>
+        <button id="btn-sair-splash" class="secundario">✖ Sair</button>
+      </div>
+    </div>
+
+    <div id="janela">
+      <!-- ─── Painel lateral esquerdo: Mochila ─────────────────────── -->
+      <aside id="painel-mochila" class="painel-lateral oculto">
+        <div class="painel-titulo">
+          <span>🎒 MOCHILA</span>
+          <button class="fechar-painel" data-fechar-painel="painel-mochila" data-lado="esquerda">✕</button>
+        </div>
+        <div class="painel-corpo mochila-corpo">
+          <div class="mochila-esquerda">
+            <div id="acoes-lote" class="acoes-lote"></div>
+            <div id="grade-itens" class="grade-itens"></div>
+          </div>
+          <div id="detalhe-item" class="detalhe-item"></div>
+        </div>
+      </aside>
+
+      <!-- ─── Zona central: jogo ────────────────────────────────────── -->
+      <div id="zona-jogo">
+        <header id="cabecalho">
+          <span id="titulo">⚔ Heróis da Barra</span>
+          <span class="info ouro">🪙 <span id="info-ouro">0</span></span>
+          <span id="info-pausa" class="pausa oculto">⏸ PAUSADO</span>
+          <span class="barra-botoes">
+            <button id="btn-mochila" title="Mochila">🎒</button>
+            <button data-modal="modal-party" title="Heróis & Party">👥</button>
+            <button id="btn-status" title="Status dos Heróis">📊</button>
+            <button id="btn-portal" title="Portal (Mapas)">🗺️</button>
+            <button id="btn-config" title="Configurações">⚙️</button>
+            <button id="btn-minimizar" title="Minimizar">⊟</button>
+            <button id="btn-sair" title="Sair do jogo">✖</button>
+          </span>
+        </header>
+
+        <canvas id="arena" width="520" height="200"></canvas>
+
+        <div id="rodape">
+          <span id="info-fase">—</span>
+          <span id="info-onda">Onda —</span>
+        </div>
+      </div>
+
+      <!-- ─── Painel lateral direito: Portal ───────────────────────── -->
+      <aside id="painel-portal" class="painel-lateral oculto">
+        <div class="painel-titulo">
+          <span>🗺️ PORTAL</span>
+          <button class="fechar-painel" data-fechar-painel="painel-portal" data-lado="direita">✕</button>
+        </div>
+        <div class="painel-corpo portal-corpo">
+          <div id="abas-ato" class="abas-ato"></div>
+          <div id="mapa-nos" class="mapa-nos"></div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- PARTY / Heróis (paperdoll + seletor) — modal central -->
+    <div id="modal-party" class="modal oculto">
+      <div class="janela-ornada larga">
+        <div class="janela-titulo"><span>👥 HERÓIS & PARTY</span><button class="fechar-modal" data-fechar="modal-party">✕</button></div>
+        <div class="janela-corpo">
+          <div id="lista-party"></div>
+          <div class="secao-titulo">Escolha um herói</div>
+          <div id="seletor-herois" class="seletor-herois"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATUS dos heróis — modal central -->
+    <div id="modal-status" class="modal oculto">
+      <div class="janela-ornada larga">
+        <div class="janela-titulo"><span>📊 STATUS</span><button class="fechar-modal" data-fechar="modal-status">✕</button></div>
+        <div class="janela-corpo">
+          <div id="abas-status" class="abas-status"></div>
+          <div id="conteudo-status"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONFIGURAÇÕES — modal central -->
+    <div id="modal-config" class="modal oculto">
+      <div class="janela-ornada">
+        <div class="janela-titulo"><span>⚙️ CONFIGURAÇÕES</span><button class="fechar-modal" data-fechar="modal-config">✕</button></div>
+        <div class="janela-corpo" id="conteudo-config"></div>
+      </div>
+    </div>
+
+    <!-- Resumo offline -->
+    <div id="modal-offline" class="modal oculto">
+      <div class="janela-ornada">
+        <div class="janela-titulo"><span>💤 Enquanto você esteve fora</span></div>
+        <div class="janela-corpo" style="text-align:center">
+          <p id="texto-offline"></p>
+          <button id="fechar-offline" class="botao-primario">Continuar</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="./renderer.js"></script>
+  </body>
+</html>

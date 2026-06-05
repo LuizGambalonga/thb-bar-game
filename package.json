@@ -1,0 +1,32 @@
+{
+  "name": "tbh-herois-da-barra",
+  "version": "0.1.0",
+  "description": "Idle hack-and-slash ARPG single-player que vive na barra de tarefas do Windows.",
+  "author": "THB",
+  "license": "MIT",
+  "main": "dist/principal/main.js",
+  "scripts": {
+    "dev": "node scripts/build.mjs && electron .",
+    "build": "node scripts/build.mjs",
+    "start": "electron .",
+    "dist": "node scripts/build.mjs && electron-builder",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8",
+    "esbuild": "^0.24.0",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.8"
+  },
+  "build": {
+    "appId": "com.thb.heroisdabarra",
+    "productName": "Herois da Barra",
+    "directories": { "output": "release" },
+    "files": ["dist/**/*", "package.json"],
+    "win": { "target": "nsis" }
+  }
+}
