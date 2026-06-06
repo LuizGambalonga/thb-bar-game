@@ -426,6 +426,7 @@ export class PainelInterface {
 
   private renderParty(meta: SnapshotMeta): void {
     const lista = this.elemento("lista-party");
+    if (lista.querySelector("select:focus")) return;
     lista.innerHTML = "";
     for (let slot = 0; slot < meta.slotsDesbloqueados; slot++) lista.appendChild(this.cartaoParty(slot, meta));
     if (meta.custoProximoSlot !== null) {
