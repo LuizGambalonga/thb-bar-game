@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 48" shape-rendering="crispEdges">
+  <!-- Capuz fechado (tight hood - distintivo do caçador) -->
+  <rect x="11" y="2" width="10" height="2" fill="#1a3a3a"/>
+  <rect x="10" y="4" width="12" height="10" fill="#1a3a3a"/>
+  <!-- Máscara (apenas olhos visíveis) -->
+  <rect x="11" y="8" width="10" height="6" fill="#1a3a3a"/>
+  <!-- Fenda dos olhos (estreita, perigosa) -->
+  <rect x="12" y="9" width="3" height="2" fill="#6cf2ff"/>
+  <rect x="17" y="9" width="3" height="2" fill="#6cf2ff"/>
+  <!-- Brilho sobrenatural nos olhos -->
+  <rect x="12" y="9" width="1" height="1" fill="#ffffff"/>
+  <rect x="17" y="9" width="1" height="1" fill="#ffffff"/>
+  <!-- Envoltório da cabeça -->
+  <rect x="9" y="6" width="2" height="8" fill="#3aa9b8" opacity="0.5"/>
+  <rect x="21" y="6" width="2" height="8" fill="#3aa9b8" opacity="0.5"/>
+
+  <!-- Gola alta -->
+  <rect x="11" y="14" width="10" height="3" fill="#1a3a3a"/>
+
+  <!-- Armadura de couro teal -->
+  <rect x="10" y="17" width="12" height="15" fill="#3aa9b8"/>
+  <!-- Tiras de couro (padrão cruzado) -->
+  <rect x="10" y="17" width="12" height="15" fill="none" stroke="#1a3a3a" stroke-width="1"/>
+  <rect x="10" y="21" width="12" height="1" fill="#1a3a3a"/>
+  <rect x="10" y="25" width="12" height="1" fill="#1a3a3a"/>
+  <rect x="15" y="17" width="1" height="15" fill="#1a3a3a"/>
+  <!-- Destaque da armadura -->
+  <rect x="11" y="18" width="4" height="3" fill="#6cf2ff" opacity="0.4"/>
+
+  <!-- Braço esquerdo (segurando besta) -->
+  <rect x="7" y="18" width="4" height="10" fill="#3aa9b8"/>
+
+  <!-- Besta (crossbow) - a arma mais icônica -->
+  <!-- Cabo da besta -->
+  <rect x="1" y="21" width="12" height="3" fill="#5c3a1a"/>
+  <!-- Corpo da besta (nock) -->
+  <rect x="2" y="18" width="8" height="9" rx="1" fill="#7a5a30"/>
+  <!-- Braços da besta -->
+  <rect x="1" y="19" width="10" height="2" fill="#5c3a1a"/>
+  <rect x="1" y="25" width="10" height="2" fill="#5c3a1a"/>
+  <!-- Corda da besta -->
+  <rect x="1" y="20" width="1" height="6" fill="#f0e8d0"/>
+  <!-- Trilha de tiro -->
+  <rect x="2" y="22" width="8" height="2" fill="#3a2a0a"/>
+  <!-- Virote (bolt) no canal -->
+  <rect x="0" y="22" width="6" height="1" fill="#b8d4ff"/>
+  <!-- Mecanismo de gatilho -->
+  <rect x="7" y="24" width="3" height="2" fill="#3a63b8"/>
+
+  <!-- Cinturão com utilitários -->
+  <rect x="10" y="32" width="12" height="2" fill="#1a3a3a"/>
+  <rect x="14" y="31" width="4" height="4" fill="#3aa9b8"/>
+  <!-- Bolsas pequenas -->
+  <rect x="10" y="30" width="3" height="4" fill="#1a3a3a"/>
+  <rect x="19" y="30" width="3" height="4" fill="#1a3a3a"/>
+
+  <!-- Calças e botas de infiltração -->
+  <rect x="10" y="34" width="5" height="12" fill="#1a3a3a"/>
+  <rect x="17" y="34" width="5" height="12" fill="#1a3a3a"/>
+  <!-- Proteção da panturrilha -->
+  <rect x="10" y="38" width="5" height="8" fill="#3aa9b8"/>
+  <rect x="17" y="38" width="5" height="8" fill="#3aa9b8"/>
+  <!-- Contornos -->
+  <rect x="10" y="34" width="5" height="12" fill="none" stroke="#0d0f1a" stroke-width="1"/>
+  <rect x="17" y="34" width="5" height="12" fill="none" stroke="#0d0f1a" stroke-width="1"/>
+  <!-- Botas silenciosas -->
+  <rect x="9" y="46" width="7" height="2" rx="1" fill="#1a3a3a"/>
+  <rect x="16" y="46" width="7" height="2" rx="1" fill="#1a3a3a"/>
+</svg>

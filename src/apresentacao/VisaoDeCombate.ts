@@ -5,6 +5,7 @@
 import type { CombatenteSnapshot, SnapshotCombate } from "../compartilhado/contratos.js";
 import { desenharCenario } from "./arte/cenario.js";
 import { desenharSprite, obterSprite } from "./arte/sprites.js";
+import { desenharImagemHeroi, obterImagemHeroi } from "./arte/imagensHerois.js";
 
 const COR_RARIDADE_HEX: Record<string, string> = {
   comum: "#b8c0d0", incomum: "#5cd97a", raro: "#5c8bff", epico: "#b15cff",
@@ -225,13 +226,21 @@ export class VisaoDeCombate {
     const chefe = this.ehChefe(c);
     const homeX = c.x * this.canvas.width;
 
+    const classeId = ehHeroi ? c.spriteId.replace("heroi:", "") : null;
+    const usarImagem = classeId !== null && obterImagemHeroi(classeId) !== null;
+    const alturaHeroiPx = sprite.altura * (ehHeroi ? 3 : chefe ? 4 : 3);
+
     // Morto: anima dissolução por alguns frames, depois some.
     if (!c.vivo) {
       if (!e || e.faseMorte <= 0) return;
       const alpha = e.faseMorte / FRAMES_MORTE;
       const baseY = this.linhaBase() + (1 - alpha) * 10;
       ctx.globalAlpha = alpha;
-      desenharSprite(ctx, sprite, "parado", 0, homeX, baseY, ehHeroi ? 3 : chefe ? 4 : 3);
+      if (usarImagem) {
+        desenharImagemHeroi(ctx, classeId!, homeX, baseY, alturaHeroiPx);
+      } else {
+        desenharSprite(ctx, sprite, "parado", 0, homeX, baseY, ehHeroi ? 3 : chefe ? 4 : 3);
+      }
       ctx.globalAlpha = 1;
       e.faseMorte -= 1;
       return;
@@ -255,6 +264,7 @@ export class VisaoDeCombate {
     if (e && e.flash > 0) { x += e.flash % 2 === 0 ? 2 : -2; e.flash -= 1; }
 
     const baseY = this.linhaBase() + bob;
+    const alturaFinal = usarImagem ? alturaHeroiPx * (escala / (ehHeroi ? 3 : 4)) : sprite.altura * escala;
     const indiceQuadro = Math.floor(this.tempo / 9);
 
     // Aura do melhor equipamento (cor da raridade).
@@ -265,22 +275,26 @@ export class VisaoDeCombate {
       ctx.globalAlpha = pulso;
       ctx.fillStyle = cor;
       ctx.beginPath();
-      ctx.ellipse(x, baseY - 2, sprite.largura * escala * 0.55, 5, 0, 0, Math.PI * 2);
+      ctx.ellipse(x, baseY - 2, (usarImagem ? alturaFinal * (32 / 48) : sprite.largura * escala) * 0.55, 5, 0, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
     }
 
-    desenharSprite(ctx, sprite, animacao, indiceQuadro, x, baseY, escala);
+    if (usarImagem) {
+      desenharImagemHeroi(ctx, classeId!, x, baseY, alturaFinal);
+    } else {
+      desenharSprite(ctx, sprite, animacao, indiceQuadro, x, baseY, escala);
+    }
 
     // Brilho da arma equipada (mais visível ao atacar).
-    if (c.temArma) {
+    if (c.temArma && !usarImagem) {
       ctx.globalAlpha = animacao === "atacar" ? 0.9 : 0.4;
       ctx.fillStyle = "#fff7d0";
       ctx.fillRect(Math.round(x + sprite.largura * escala * 0.4), Math.round(baseY - sprite.altura * escala * 0.55), 2, 6);
       ctx.globalAlpha = 1;
     }
 
-    const topo = baseY - sprite.altura * escala;
+    const topo = baseY - alturaFinal;
     if (chefe) {
       this.desenharBarraBoss(x, topo - 14, c.vidaPct, c.nome);
     } else {

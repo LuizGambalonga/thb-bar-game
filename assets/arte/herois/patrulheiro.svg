@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 48" shape-rendering="crispEdges">
+  <!-- Capuz do ranger (wide, rounded top) -->
+  <rect x="11" y="2" width="10" height="2" fill="#3a9a55"/>
+  <rect x="9" y="4" width="14" height="2" fill="#3a9a55"/>
+  <rect x="8" y="6" width="16" height="6" fill="#3a9a55"/>
+  <rect x="9" y="12" width="14" height="2" fill="#3a9a55"/>
+  <!-- Sombra interna do capuz (dá profundidade) -->
+  <rect x="10" y="7" width="12" height="5" fill="#1e5a2a"/>
+
+  <!-- Rosto (parcialmente visível no capuz) -->
+  <rect x="11" y="8" width="10" height="7" fill="#f1c27d"/>
+  <!-- Olhos de caçador -->
+  <rect x="12" y="10" width="3" height="2" fill="#0d0f1a"/>
+  <rect x="17" y="10" width="3" height="2" fill="#0d0f1a"/>
+  <rect x="12" y="10" width="1" height="1" fill="#3a9a55"/>
+  <rect x="17" y="10" width="1" height="1" fill="#3a9a55"/>
+  <!-- Nariz pequeno -->
+  <rect x="15" y="12" width="2" height="1" fill="#cd9b5f"/>
+  <!-- Boca -->
+  <rect x="13" y="14" width="6" height="1" fill="#cd9b5f"/>
+
+  <!-- Armadura leve (couro) -->
+  <rect x="10" y="15" width="12" height="3" fill="#3a9a55"/>
+  <rect x="10" y="18" width="12" height="14" fill="#6ee089"/>
+  <!-- Detalhes de couro (costura) -->
+  <rect x="10" y="22" width="12" height="1" fill="#3a9a55"/>
+  <rect x="10" y="26" width="12" height="1" fill="#3a9a55"/>
+  <!-- Contorno do torso -->
+  <rect x="10" y="15" width="12" height="17" fill="none" stroke="#0d0f1a" stroke-width="1"/>
+
+  <!-- Aljava (quiver, costas - lado direito visível) -->
+  <rect x="22" y="14" width="4" height="14" rx="1" fill="#5c3a1a"/>
+  <rect x="23" y="12" width="2" height="4" fill="#b8f0c8"/>
+  <rect x="23" y="10" width="2" height="4" fill="#b8f0c8" opacity="0.7"/>
+
+  <!-- Arco (bow - o elemento mais icônico do patrulheiro) -->
+  <!-- Haste do arco -->
+  <rect x="4" y="8" width="2" height="28" fill="#7a4a10"/>
+  <!-- Curvatura (simulada com rects) -->
+  <rect x="3" y="8" width="2" height="4" fill="#5c3a1a"/>
+  <rect x="3" y="32" width="2" height="4" fill="#5c3a1a"/>
+  <rect x="2" y="12" width="2" height="2" fill="#5c3a1a"/>
+  <rect x="2" y="30" width="2" height="2" fill="#5c3a1a"/>
+  <!-- Corda do arco -->
+  <rect x="5" y="8" width="1" height="28" fill="#f0e8d0" opacity="0.8"/>
+
+  <!-- Cinto de aventureiro -->
+  <rect x="10" y="32" width="12" height="2" fill="#5c3a1a"/>
+  <rect x="14" y="32" width="4" height="2" fill="#c79a3a"/>
+
+  <!-- Calças de ranger -->
+  <rect x="10" y="34" width="5" height="12" fill="#3a9a55"/>
+  <rect x="17" y="34" width="5" height="12" fill="#3a9a55"/>
+  <!-- Proteção de joelho -->
+  <rect x="10" y="38" width="5" height="4" fill="#1e5a2a"/>
+  <rect x="17" y="38" width="5" height="4" fill="#1e5a2a"/>
+  <!-- Contorno -->
+  <rect x="10" y="34" width="5" height="12" fill="none" stroke="#0d0f1a" stroke-width="1"/>
+  <rect x="17" y="34" width="5" height="12" fill="none" stroke="#0d0f1a" stroke-width="1"/>
+  <!-- Botas -->
+  <rect x="9" y="46" width="7" height="2" rx="1" fill="#5c3a1a"/>
+  <rect x="16" y="46" width="7" height="2" rx="1" fill="#5c3a1a"/>
+</svg>

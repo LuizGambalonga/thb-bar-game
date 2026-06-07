@@ -2,8 +2,10 @@
 
 import { VisaoDeCombate } from "./VisaoDeCombate.js";
 import { PainelInterface } from "./PainelInterface.js";
+import { preCarregarImagensHerois } from "./arte/imagensHerois.js";
 
 function iniciar(): void {
+  preCarregarImagensHerois();
   const params = new URLSearchParams(window.location.search);
   const modoPainel = params.get("painel") as "mochila" | "portal" | null;
 
