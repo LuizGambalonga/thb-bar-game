@@ -755,6 +755,18 @@ export class PainelInterface {
     secOff.appendChild(linhaOff);
     secOff.appendChild(preview);
     conteudo.appendChild(secOff);
+
+    // Seção: Resetar jogo
+    const secReset = this.doc.createElement("div");
+    secReset.className = "config-secao config-secao-perigo";
+    secReset.innerHTML = `<div class="config-secao-titulo">Zona de Perigo</div>
+      <p class="config-aviso">Apaga todo o progresso: heróis, itens e ouro. Irreversível.</p>`;
+    const btnReset = this.doc.createElement("button");
+    btnReset.className = "btn-perigo";
+    btnReset.textContent = "Resetar Jogo";
+    btnReset.onclick = () => window.jogo.enviarIntencao({ tipo: "resetarJogo" });
+    secReset.appendChild(btnReset);
+    conteudo.appendChild(secReset);
   }
 
   // ─────────────────────────────────────────────────────────────────────────

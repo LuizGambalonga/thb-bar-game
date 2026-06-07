@@ -5,10 +5,10 @@
     "paletaBase": { "o": "#0d0f1a", "s": "#f1c27d", "k": "#cd9b5f", "e": "#0a0c16", "w": "#dde3f0", "m": "#8a90a6" },
     "parado": [
       ["......dd......", ".....oaao.....", "....odaado....", "...oaaaaaao...", "...oassssao...", "...oaseesao...", "...oassksao...", "....odaao.....", "..mwoaaaowm...", "..woaaddaaow..", "..ooaaaaaoo.m.", "...oaaaaao.m..", "...oaaaaao.m..", "...oa..ao.....", "...oo..oo.....", "..ooo..ooo...."],
-      ["......dd......", ".....oaao.....", "....odaado....", "...oaaaaaao...", "...oassssao...", "...oaseesao...", "...oassksao...", "....odaao.....", "..mwoaaaowm...", "..woaaddaaow.m", "..ooaaaaaoo.m.", "...oaaaaaom...", "...oaaaaao....", "...oaa.ao.....", "..oo...oo.....", "..ooo.ooo....."]
+      ["......dd......", ".....oaao.....", "....odaado....", "...oaaaaaao...", "...oassssao...", "...oaseesao...", "...oassksao...", "....odaao.....", "..mwoaaaowm...", "..woaaddaaow.m", "..ooaaaaaoo.m.", "...aaaaaom....", "...oaaaaao....", "...oaa.ao.....", "..oo...oo.....", "..ooo.ooo....."]
     ],
     "atacar": [
-      ["......dd......", ".....oaao.....", "....odaado....", "...oaaaaaao...", "...oassssao...", "...oaseesao..m", "...oassksao.m.", "....odaaoom...", "..mwoaaaooomm.", "..woaaddaaowww", "..ooaaaaaoowww", "...oaaaaaoo...", "...oaaaaao....", "...oaaao......", "..oo..ooo.....", ".ooo...ooo...."]
+      ["......dd......", ".....oaao.....", "....odaado....", "...oaaaaaao...", "...oassssao...", "...oaseesao.m.", "...oassksao.m.", "....odaaoom...", "..mwoaaaooomm.", "..woaaddaaowww", "..ooaaaaaoowww", "...oaaaaaoo...", "...oaaaaao....", "...oaaao......", "..oo..ooo.....", ".ooo...ooo...."]
     ]
   },
   "classes": {
@@ -21,69 +21,400 @@
   },
   "monstros": {
     "bit-slime": {
-      "largura": 12, "altura": 12,
-      "paleta": { "o": "#0f2417", "g": "#5cd97a", "h": "#9bf0b0", "e": "#0a0c16" },
+      "largura": 12, "altura": 10,
+      "paleta": { "o": "#081508", "g": "#3ecf5e", "h": "#78f59a", "e": "#ffee44", "b": "#186e2e" },
       "parado": [
-        ["............", "....oooo....", "...oggggo...", "..oghgggho..", "..ogeggego..", "..oggggggo..", "..ogg..ggo..", "..oggggggo..", ".oggggggggo.", ".oghgggghgo.", ".oggggggggo.", "..oooooooo.."],
-        ["............", "............", "...oggggo...", "..oghgggho..", "..ogeggego..", "..oggggggo..", ".oggggggggo.", ".oghgggghgo.", ".oggggggggo.", ".oggggggggo.", ".oooooooooo.", "............"]
+        [
+          "....oooo....",
+          "...ogeego...",
+          "...oghhgo...",
+          "..oooggooo..",
+          ".ogggggggo..",
+          ".oghbgbhgo..",
+          ".ogggggggo..",
+          "..oobgbooo..",
+          "...ogbgo....",
+          "....ooo....."
+        ],
+        [
+          "....oooo....",
+          "...ogeego...",
+          "...oghgo....",
+          "..oogggoo...",
+          "..ogggggo...",
+          ".ooghbgbhoo.",
+          "..ogggggo...",
+          "..oobgboo...",
+          "...ogbgo....",
+          "....ooo....."
+        ]
       ],
       "atacar": [
-        ["............", "...oooo.....", "..oggggo....", ".oghgggho...", ".ogeeggo....", ".oggggggo...", "ogg..gggo...", "ogggggggo...", "oggggggggo..", "oghggggggo..", ".oooooooo...", "............"]
+        [
+          ".....oooo...",
+          "....ogeego..",
+          "....oghhgo..",
+          "...oogggoo..",
+          "..oogggggoo.",
+          ".oggbgbgbgo.",
+          "..oogggoooo.",
+          "....oogoo...",
+          ".....oo.....",
+          "............"
+        ]
       ]
     },
     "icone-zumbi": {
-      "largura": 12, "altura": 11,
-      "paleta": { "o": "#142a12", "z": "#7bb661", "h": "#a7d98c", "r": "#ff5c5c", "g": "#3c5e2c" },
+      "largura": 12, "altura": 13,
+      "paleta": { "o": "#0d2210", "z": "#66bb88", "h": "#99ddaa", "r": "#ee3333", "f": "#55ff99", "d": "#335544" },
       "parado": [
-        ["...oooo.....", "..ozzzzo....", "..ozhhzzo...", "..ozrzzrzo..", "..ozzzzzzo..", "...ozggzo...", "z.ozzzzzzo.z", "zoozzzzzzooz", "..ozzzzzzo..", "..ozz..zzo..", "..oo....oo.."],
-        ["...oooo.....", "..ozzzzo....", "..ozhhzzo...", "..ozrzzrzo..", "..ozzzzzzo..", "...ozggzo...", "z.ozzzzzzo.z", "zoozzzzzzooz", "..ozzzzzzo..", "..ozz..zzo..", "..oo....oo.."]
+        [
+          "....oooo....",
+          "...ozhhzo...",
+          "..ozzrrzzo..",
+          "..ozhhzzo...",
+          "..ozzfzzo...",
+          "...ozzzo....",
+          "..ozzzzo....",
+          "..ozzzzzzo..",
+          "..ozzdzzzo..",
+          ".ozzdzdzzo..",
+          ".ozzzzzzo...",
+          "..ooozoo....",
+          "...ooo......"
+        ],
+        [
+          "....oooo....",
+          "...ozhhzo...",
+          "..ozzrrzzo..",
+          "..ozhhzzo...",
+          "..ozffzzo...",
+          "...ozzzo....",
+          "...ozzzzo...",
+          "..ozzzzzo...",
+          "..ozzzzzzo..",
+          "..ozzdzzzo..",
+          ".ozzdzzo....",
+          "..oozooo....",
+          "....ooo....."
+        ]
       ],
       "atacar": [
-        ["...oooo.....", "..ozzzzo....", ".ozhhzzo....", ".ozrzzrzo...", ".ozzzzzzo...", "..ozggzo....", "ooozzzzzzo..", "zzozzzzzzo..", "..ozzzzzzo..", "..ozz.zzo...", "..oo..oo...."]
+        [
+          "....oooo....",
+          "..oozhhzoo..",
+          ".ozzrrzzo...",
+          ".ozhhzzo....",
+          ".ozzfzzo....",
+          "..ozzzzo....",
+          ".ozzzzzzo...",
+          "ozzzzzzzzo..",
+          "ozzzdzdzzo..",
+          "ozzzzzzo....",
+          "ozzzzo......",
+          "ozzo........",
+          "o..........."
+        ]
       ]
     },
     "cursor-selvagem": {
-      "largura": 12, "altura": 12,
-      "paleta": { "o": "#0a0c16", "w": "#ffffff" },
+      "largura": 12, "altura": 11,
+      "paleta": { "o": "#080a1a", "c": "#b8ccff", "e": "#dd44ff", "t": "#2255cc", "k": "#ddeeff" },
       "parado": [
-        ["o...........", "oo..........", "owo.........", "owwo........", "owwwo.......", "owwwwo......", "owwwwwo.....", "owwwwwwo....", "owwwooooo...", "owwo.oo.....", "owo..owo....", "oo...oo....."],
-        ["o...........", "oo..........", "owo.........", "owwo........", "owwwo.......", "owwwwo......", "owwwwwo.....", "owwwwwwo....", "owwwooooo...", "owwo.oo.....", "owo..owo....", "oo...oo....."]
+        [
+          "..o.....o...",
+          ".oco...oco..",
+          ".occo.occo..",
+          ".occcccco...",
+          ".ockekco....",
+          ".oktkkto....",
+          "..okkkko....",
+          "..okkkkkoo..",
+          "..okktkkoo..",
+          "...ooooo....",
+          "............"
+        ],
+        [
+          "..o.....o...",
+          "..oco...oco.",
+          "..occoocco..",
+          "..occcccco..",
+          "..ockekco...",
+          "..oktkkto...",
+          "...okkkoo...",
+          "...okkkkko..",
+          "...okktkkoo.",
+          "....ooooo...",
+          "............"
+        ]
       ],
       "atacar": [
-        ["o...........", "oo..........", "owo.........", "owwo........", "owwwo.......", "owwwwo......", "owwwwwo.....", "owwwwwwo....", "owwwooooo...", "owwo.oo.....", "owo..owo....", "oo...oo....."]
+        [
+          "............",
+          "o...........",
+          "oo..........",
+          "occo........",
+          "occcccco....",
+          "ockekkcco...",
+          "okkkkkko....",
+          "okktkktko...",
+          ".okkkkkoo...",
+          ".ooooooo....",
+          "............"
+        ]
       ]
     },
     "popup": {
-      "largura": 12, "altura": 8,
-      "paleta": { "o": "#1a2240", "b": "#5c8bff", "w": "#dfe6ff", "x": "#ff5c5c" },
+      "largura": 12, "altura": 9,
+      "paleta": { "o": "#1a0828", "v": "#993dbf", "h": "#cc77ff", "r": "#ff2222", "w": "#ffccff" },
       "parado": [
-        ["oooooooooo..", "obbbbbbbxo..", "owwwwwwwwo..", "owwwwwwwwo..", "owwwooowwo..", "owwwwwwwwo..", "owwwwwwwwo..", "oooooooooo.."],
-        ["oooooooooo..", "obbbbbbbxo..", "owwwwwwwwo..", "owwwwwwwwo..", "owwwooowwo..", "owwwwwwwwo..", "owwwwwwwwo..", "oooooooooo.."]
+        [
+          ".o.....o....",
+          "ovo...ovo...",
+          "ovvo.ovvo...",
+          "ovvvvvvvo...",
+          ".ovvrrvvo...",
+          "..ovvvvo....",
+          "..ovhhvo....",
+          "...ovvo.....",
+          "....oo......"
+        ],
+        [
+          "..o.o.o.....",
+          "oooo.oooo...",
+          ".ovvvvvvo...",
+          ".ovvrrvvo...",
+          "..ovvvvo....",
+          "..ovhhvo....",
+          "...ovvo.....",
+          "....oo......",
+          "............"
+        ]
       ],
       "atacar": [
-        ["oooooooooo..", "obbbbbbbxo..", "owwwwwwwwo..", "owwwooowwo..", "owwwooowwo..", "owwwwwwwwo..", "owwwwwwwwo..", "oooooooooo.."]
+        [
+          ".o.o.o......",
+          "oooooooo....",
+          "ovvvvvvvo...",
+          "ovvrrvvo....",
+          "ovvvvvvo....",
+          ".ovvhvo.....",
+          "..ovvo......",
+          "...oo.......",
+          "............"
+        ]
       ]
     },
     "a-lixeira": {
-      "largura": 12, "altura": 10,
-      "paleta": { "o": "#11151f", "g": "#8a96a8", "w": "#c4ccda" },
+      "largura": 14, "altura": 13,
+      "paleta": { "o": "#0f1520", "g": "#5577aa", "h": "#88aacc", "e": "#44ffcc", "r": "#ff4444", "d": "#334466", "k": "#aaccee" },
       "parado": [
-        [".oo....oo...", "..oooooo....", ".oooooooo...", ".ogggggggo..", ".ogwg.gwgo..", ".og.g.g.go..", ".og.g.g.go..", ".og.g.g.go..", ".oggggggggo.", "..oooooooo.."],
-        [".oo....oo...", "..oooooo....", ".oooooooo...", ".ogggggggo..", ".ogwg.gwgo..", ".og.g.g.go..", ".og.g.g.go..", ".og.g.g.go..", ".oggggggggo.", "..oooooooo.."]
+        [
+          "....oooooo....",
+          "...ogegeeo....",
+          "...oghkghgo...",
+          "....ooggoo....",
+          "...ogggggoo...",
+          "..ooggggggo...",
+          "..ogdgdgdgo...",
+          "..ogggggggoo..",
+          "..oggeggegoo..",
+          "...oooggoooo..",
+          "....oggggoo...",
+          "....ooogoo....",
+          ".....ooo......"
+        ],
+        [
+          "....oooooo....",
+          "...ogegeeo....",
+          "...oghkghgo...",
+          "....ooggoo....",
+          "....ogggoo....",
+          "...oogggggoo..",
+          "..ooodgdgooo..",
+          "..oggggggggo..",
+          "..oggeggegoo..",
+          "...oooggoooo..",
+          "....oggggoo...",
+          "....ooogoo....",
+          ".....ooo......"
+        ]
       ],
       "atacar": [
-        [".oo....oo...", "..oooooo....", ".oooooooo...", ".ogggggggo..", ".ogwg.gwgo..", ".og.g.g.go..", ".og.g.g.go..", ".og.g.g.go..", ".oggggggggo.", "..oooooooo.."]
+        [
+          ".....oooooo...",
+          "..ooogegeeooo.",
+          "..oghkghgo....",
+          "...ooggoo.....",
+          "..ogggggoo....",
+          ".oogggggggoo..",
+          "ooodgdgdgooo..",
+          "oogggggggggoo.",
+          "ooggeggegggoo.",
+          ".ooooggoooooo.",
+          "..ooggggoo....",
+          "...ooogoo.....",
+          ".....ooo......"
+        ]
+      ]
+    },
+    "cursor-chefe": {
+      "largura": 14, "altura": 12,
+      "paleta": { "o": "#080914", "c": "#8899cc", "e": "#ffffff", "n": "#1122aa", "t": "#3355ff", "l": "#ffff44", "w": "#bbccff" },
+      "parado": [
+        [
+          "....o.....o...",
+          "...oco...oco..",
+          "..occo...occo.",
+          "..occccccccco.",
+          "..ocwekwecco..",
+          "..occcccccco..",
+          "..ocntcntcco..",
+          "..occcccccco..",
+          ".ooccwcwcwoo..",
+          ".oncccccccno..",
+          "..oooooooooo..",
+          ".............."
+        ],
+        [
+          "....o.....o...",
+          "....oco.oco...",
+          "...occo.occo..",
+          "...occcccco...",
+          "...ocwekweco..",
+          "...occcccco...",
+          "...ocntcntco..",
+          "...occcccco...",
+          "...occwcwco...",
+          "...oncccno....",
+          "....oooooo....",
+          ".............."
+        ]
+      ],
+      "atacar": [
+        [
+          "..............",
+          "o.............",
+          "oo............",
+          "occo..........",
+          "occcccccc.....",
+          "ocwekwecccoo..",
+          "occcccccccoo..",
+          "ocntcntccco...",
+          "occccccccco...",
+          "ooccwcwcoo....",
+          ".oncccno......",
+          "..ooooo......."
+        ]
+      ]
+    },
+    "popup-gigante": {
+      "largura": 14, "altura": 14,
+      "paleta": { "o": "#1a0030", "v": "#7a1aaa", "h": "#bb66ee", "r": "#ff2222", "w": "#ffccff", "e": "#ffffff", "t": "#dd88ff", "d": "#440066" },
+      "parado": [
+        [
+          ".....oooo.....",
+          "....ovhhvo....",
+          "...ovheeehvo..",
+          "...ovreervo...",
+          "..oovhhhvoo...",
+          ".oovvvvvvvoo..",
+          ".ovvvrvvvvo...",
+          ".ovvvvvvvvo...",
+          ".ovtttttvo...",
+          ".oovvvvvoo...",
+          "..ovhvhvo.....",
+          "..ovvvvvo.....",
+          "...ovvvo......",
+          "....oo........"
+        ],
+        [
+          ".....oooo.....",
+          "....ovhhvo....",
+          "...ovheeehvo..",
+          "...ovreervo...",
+          "..oovhhhvoo...",
+          ".oovvvvvvvoo..",
+          ".ovvvvvvvvo...",
+          ".ovvvrvvvvvo..",
+          ".ovtttttvo...",
+          ".oovvvvvoo...",
+          "..ovhvhvo.....",
+          "..ovvvvvo.....",
+          "...ovvvo......",
+          "....oo........"
+        ]
+      ],
+      "atacar": [
+        [
+          "....oooooo....",
+          "...ovhhhvo....",
+          "..ovheeehvo...",
+          "..ovreervo....",
+          ".oovhhhvvoo...",
+          "oovvvvvvvvoo..",
+          "ovvvrvvvrvoo..",
+          "ovvvvvvvvvoo..",
+          "ovttttttttoo..",
+          ".ovvvvvvvvo...",
+          ".ovhvhvhvo....",
+          "..ovvvvvo.....",
+          "....oooo......",
+          ".............."
+        ]
       ]
     },
     "guardiao-do-espaco": {
-      "largura": 12, "altura": 11,
-      "paleta": { "o": "#11151f", "m": "#9aa0c0", "c": "#5cf2ff", "r": "#ff5c5c", "w": "#ffd96a" },
+      "largura": 14, "altura": 13,
+      "paleta": { "o": "#0f1020", "m": "#7788aa", "c": "#55eeff", "r": "#ff5555", "w": "#ffee77", "h": "#aabbcc", "d": "#334455" },
       "parado": [
-        ["..o....o....", "..o....o....", ".oooooooo...", ".ommmmmmmo..", ".omcmmcmmo..", ".ommmmmmmo..", ".ommooommo..", ".ooooooooo..", "moommmmoomm.", ".ommmmmmmo..", ".oo....oo..."],
-        ["..o....o....", "..o....o....", ".oooooooo...", ".ommmmmmmo..", ".omcmmcmmo..", ".ommmmmmmo..", ".ommooommo..", ".ooooooooo..", "moommmmoomm.", ".ommmmmmmo..", ".oo....oo..."]
+        [
+          "....oooooo....",
+          "...omhhhmo....",
+          "..oomhcchmo...",
+          "..ommhmhmmo...",
+          "...ommmmmo....",
+          "..oommmmmoo...",
+          "..ommmmmmmmo..",
+          "..ommdmmmdmo..",
+          "..ommmmmmmmo..",
+          ".oommmmmmmmoo.",
+          ".ommcmmcmmo...",
+          ".ommmmmmmmo...",
+          "..oo......oo.."
+        ],
+        [
+          "....oooooo....",
+          "...omhhhmo....",
+          "..oomhcchmo...",
+          "..ommhmhmmo...",
+          "...ommmmmo....",
+          "..oommmmmoo...",
+          "..ommmmmmmmo..",
+          "..ommdmmmdmo..",
+          "..ommmmmmmmo..",
+          ".oommmmmmmmoo.",
+          ".ommcmmcmmo...",
+          ".ommmmmmmmo...",
+          "..oo......oo.."
+        ]
       ],
       "atacar": [
-        ["..o....o....", "..o....o....", ".oooooooo...", ".ommmmmmmo..", ".omrmmrmmo..", ".ommmmmmmo..", ".ommwwwmmo..", ".ooooooooo..", "mmoommmmoo.m", ".ommmmmmmo..", ".ooo...ooo.."]
+        [
+          "....oooooo....",
+          "...omhhhmo....",
+          "..oomhrrhmo...",
+          "..ommhmhmmo...",
+          "...ommmmmo....",
+          "..oommmmmoo...",
+          "..ommmmmmmmoo.",
+          "oommdmmmdmmoo.",
+          "oommmmmmmmmoo.",
+          "oommmmmmmmoo..",
+          "ommmcmmcmmo...",
+          "ommmmmmmmo....",
+          "oo..........oo"
+        ]
       ]
     }
   }

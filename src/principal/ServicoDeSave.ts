@@ -1,7 +1,7 @@
 // Persistência do save: escrita atômica, backup e migração (atende 009).
 // Depende de abstração RepositorioDeSave; implementação concreta usa o sistema de arquivos.
 
-import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync, copyFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync, copyFileSync } from "node:fs";
 import { join } from "node:path";
 import type { JogoSalvo } from "../nucleo/save/JogoSalvo.js";
 import { migrarSave, saveValido } from "../nucleo/save/JogoSalvo.js";
@@ -9,6 +9,7 @@ import { migrarSave, saveValido } from "../nucleo/save/JogoSalvo.js";
 export interface RepositorioDeSave {
   carregar(): JogoSalvo | null;
   salvar(jogo: JogoSalvo): void;
+  apagar(): void;
 }
 
 export class RepositorioDeSaveArquivo implements RepositorioDeSave {
@@ -42,6 +43,12 @@ export class RepositorioDeSaveArquivo implements RepositorioDeSave {
       copyFileSync(this.caminho, this.caminhoBackup);
     }
     renameSync(this.caminhoTmp, this.caminho);
+  }
+
+  apagar(): void {
+    for (const caminho of [this.caminho, this.caminhoBackup, this.caminhoTmp]) {
+      try { if (existsSync(caminho)) rmSync(caminho); } catch { /* ignora */ }
+    }
   }
 
   private tentarLer(caminho: string): JogoSalvo | null {

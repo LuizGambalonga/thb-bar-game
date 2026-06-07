@@ -28,6 +28,7 @@ export type Intencao =
   | { tipo: "minimizar" }
   | { tipo: "expandirJanela"; lado: "esquerda" | "direita"; larguraPainel: number }
   | { tipo: "encolherJanela"; lado: "esquerda" | "direita" }
+  | { tipo: "resetarJogo" }
   | { tipo: "sair" };
 
 export interface CombatenteSnapshot {

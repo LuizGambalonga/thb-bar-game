@@ -1,6 +1,6 @@
 // Composition root: instancia e conecta os serviços (injeção de dependências).
 
-import { app, ipcMain } from "electron";
+import { app, ipcMain, dialog } from "electron";
 import {
   CANAL_INTENCAO, CANAL_RESUMO_OFFLINE, CANAL_SOLICITAR_META,
 } from "../compartilhado/contratos.js";
@@ -49,10 +49,27 @@ function iniciar(): void {
   const enviarMeta = (s: SnapshotMeta) => gerenciador.emitirParaTodos("jogo:snapshotMeta", s);
   const laco = new LacoDeJogo(estado, enviarCombate, enviarMeta);
 
-  ipcMain.on(CANAL_INTENCAO, (_evento, intencao: Intencao) => {
+  ipcMain.on(CANAL_INTENCAO, async (_evento, intencao: Intencao) => {
     if (intencao.tipo === "sair") {
       repositorio.salvar(estado.serializar(Date.now()));
       app.quit();
+      return;
+    }
+    if (intencao.tipo === "resetarJogo") {
+      const { response } = await dialog.showMessageBox({
+        type: "warning",
+        buttons: ["Apagar tudo", "Cancelar"],
+        defaultId: 1,
+        cancelId: 1,
+        title: "Resetar Jogo",
+        message: "Todo o progresso será apagado permanentemente.",
+        detail: "Heróis, itens e ouro serão perdidos. Isso não pode ser desfeito.",
+      });
+      if (response === 0) {
+        repositorio.apagar();
+        app.relaunch();
+        app.exit(0);
+      }
       return;
     }
     if (intencao.tipo === "minimizar") {

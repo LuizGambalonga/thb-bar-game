@@ -328,6 +328,11 @@ button { font-family: inherit; cursor: pointer; }
 .vel-botoes { display: flex; gap: 4px; }
 .vel-botoes button { background: #2c2113; color: var(--ouro-claro); border: 1px solid var(--ouro); border-radius: 5px; padding: 2px 10px; font-size: 12px; }
 .vel-botoes button.ativo { background: var(--ouro); color: #1a130d; }
+.config-secao-perigo { border-top: 1px solid #5a1a1a; margin-top: 18px; padding-top: 10px; }
+.config-secao-perigo .config-secao-titulo { color: var(--imortal); }
+.config-aviso { font-size: 11px; color: var(--texto-fraco); margin: 4px 0 8px; line-height: 1.4; }
+.btn-perigo { background: #3a1010; color: var(--imortal); border: 1px solid #7a2020; border-radius: 5px; padding: 4px 14px; font-size: 12px; cursor: pointer; }
+.btn-perigo:hover { background: #5a1818; border-color: var(--imortal); }
 
 /* ─── MODO PAINEL (janela flutuante separada) ─── */
 body.modo-painel #splash { display: none !important; }
