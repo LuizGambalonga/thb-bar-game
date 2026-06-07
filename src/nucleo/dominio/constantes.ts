@@ -5,7 +5,7 @@ export const TICK_MS = 1000 / TICKS_POR_SEGUNDO;
 
 export const MAX_PARTY = 3;
 
-export const CONST_DEFESA = 100;
+export const CONST_DEFESA = 60;
 export const CRESCIMENTO_POR_NIVEL = 0.08;
 
 export const MULT_VANTAGEM_ELEMENTAL = 1.25;
