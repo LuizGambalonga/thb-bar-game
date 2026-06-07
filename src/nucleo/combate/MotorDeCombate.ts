@@ -4,6 +4,7 @@
 
 import {
   DURACAO_BUFF_TICKS, TICKS_INTERVALO_ENTRE_ONDAS, TICKS_POR_SEGUNDO,
+  TICKS_PAUSA_MORTE_PARTY,
 } from "../dominio/constantes.js";
 import type {
   Atributos, DefFase, DefHabilidade, DefMonstro, Elemento, PosicaoFormacao,
@@ -70,6 +71,7 @@ export class MotorDeCombate {
   private indiceOnda = 0;
   private tickAtual = 0;
   private intervaloRestante = 0;
+  private ticksMorteParty = 0;
   private estado: EstadoCombate = "lutando";
 
   constructor(
@@ -265,12 +267,21 @@ export class MotorDeCombate {
 
   private avaliarFimDeOnda(eventos: EventoCombate[]): void {
     if (!this.algumVivo(this.herois)) {
+      // Pausa visível antes de reviver (o renderer mostrará animação de morte)
+      if (this.ticksMorteParty === 0) {
+        this.ticksMorteParty = TICKS_PAUSA_MORTE_PARTY;
+        return;
+      }
+      this.ticksMorteParty -= 1;
+      if (this.ticksMorteParty > 0) return;
       this.reviverParty();
       this.spawnarOnda(this.indiceOnda);
       eventos.push({ tipo: "partyDerrotada" });
       return;
     }
     if (!this.algumVivo(this.inimigos)) {
+      // Cura total ao final de cada onda (heróis sobreviventes)
+      for (const h of this.herois) if (h.vivo) h.vidaAtual = h.vidaMax;
       if (this.indiceOnda + 1 < this.fase.ondas.length) {
         this.estado = "intervalo";
         this.intervaloRestante = TICKS_INTERVALO_ENTRE_ONDAS;

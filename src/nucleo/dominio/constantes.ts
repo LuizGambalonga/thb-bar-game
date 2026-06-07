@@ -13,6 +13,7 @@ export const MULT_DESVANTAGEM_ELEMENTAL = 0.8;
 export const MULT_NEUTRO_ELEMENTAL = 1.0;
 
 export const TICKS_INTERVALO_ENTRE_ONDAS = 8; // ~0.8s
+export const TICKS_PAUSA_MORTE_PARTY = 25;   // ~2.5s para mostrar heróis mortos
 export const TETO_OFFLINE_HORAS_BASE = 2;
 export const DURACAO_BUFF_TICKS = 30; // duração padrão de buffs de habilidade
 export const LIMITE_INVENTARIO = 60;

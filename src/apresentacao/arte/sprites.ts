@@ -13,10 +13,13 @@ export interface Sprite {
   atacar: string[][];
 }
 
+type DefSprite = { largura: number; altura: number; paleta: Record<string, string>; parado: string[][]; atacar: string[][] };
+
 interface DadosArte {
   heroiTemplate: { largura: number; altura: number; paletaBase: Record<string, string>; parado: string[][]; atacar: string[][] };
   classes: Record<string, { claro: string; escuro: string }>;
-  monstros: Record<string, { largura: number; altura: number; paleta: Record<string, string>; parado: string[][]; atacar: string[][] }>;
+  herois: Record<string, DefSprite>;
+  monstros: Record<string, DefSprite>;
 }
 
 const arte = dadosArte as DadosArte;
@@ -25,13 +28,16 @@ function montarSprites(): Record<string, Sprite> {
   const mapa: Record<string, Sprite> = {};
   const t = arte.heroiTemplate;
   for (const [id, cores] of Object.entries(arte.classes)) {
-    mapa[`heroi:${id}`] = {
-      largura: t.largura,
-      altura: t.altura,
-      paleta: { ...t.paletaBase, a: cores.claro, d: cores.escuro },
-      parado: t.parado,
-      atacar: t.atacar,
-    };
+    const def = arte.herois[id];
+    if (def) {
+      mapa[`heroi:${id}`] = { largura: def.largura, altura: def.altura, paleta: def.paleta, parado: def.parado, atacar: def.atacar };
+    } else {
+      mapa[`heroi:${id}`] = {
+        largura: t.largura, altura: t.altura,
+        paleta: { ...t.paletaBase, a: cores.claro, d: cores.escuro },
+        parado: t.parado, atacar: t.atacar,
+      };
+    }
   }
   for (const [id, m] of Object.entries(arte.monstros)) {
     mapa[`monstro:${id}`] = { largura: m.largura, altura: m.altura, paleta: m.paleta, parado: m.parado, atacar: m.atacar };
