@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 26" shape-rendering="crispEdges">
+  <!-- LEVIATÃ DE DADOS: cabeça de serpente/dragão de dados, boss -->
+  <!-- CRISTA dorsal (identidade de boss) -->
+  <rect x="8" y="0" width="3" height="5" fill="#44ffcc"/>
+  <rect x="13" y="0" width="3" height="7" fill="#44ffcc"/>
+  <rect x="18" y="0" width="3" height="5" fill="#44ffcc"/>
+  <!-- CABEÇA larga de leviatã -->
+  <rect x="4" y="4" width="20" height="14" fill="#5577aa"/>
+  <rect x="5" y="5" width="18" height="12" fill="#7799cc"/>
+  <!-- OLHOS brilhantes (energia digital) -->
+  <rect x="6" y="7" width="5" height="5" fill="#44ffcc"/>
+  <rect x="17" y="7" width="5" height="5" fill="#44ffcc"/>
+  <rect x="7" y="8" width="3" height="3" fill="#88aacc"/>
+  <rect x="18" y="8" width="3" height="3" fill="#88aacc"/>
+  <rect x="7" y="8" width="1" height="1" fill="#ffffff"/>
+  <rect x="18" y="8" width="1" height="1" fill="#ffffff"/>
+  <!-- FOCINHO longo com PRESAS -->
+  <rect x="2" y="12" width="24" height="6" fill="#5577aa"/>
+  <rect x="3" y="13" width="22" height="4" fill="#6688bb"/>
+  <!-- Narinas -->
+  <rect x="6" y="13" width="2" height="2" fill="#334466"/>
+  <rect x="20" y="13" width="2" height="2" fill="#334466"/>
+  <!-- MANDÍBULA com dentes grandes -->
+  <rect x="2" y="18" width="24" height="6" fill="#3a5580"/>
+  <rect x="3" y="19" width="22" height="4" fill="#4a6890"/>
+  <!-- Dentes (presas) -->
+  <rect x="4" y="17" width="3" height="4" fill="#aaccee"/>
+  <rect x="8" y="17" width="3" height="3" fill="#aaccee"/>
+  <rect x="12" y="17" width="3" height="4" fill="#aaccee"/>
+  <rect x="16" y="17" width="3" height="3" fill="#aaccee"/>
+  <rect x="20" y="17" width="3" height="4" fill="#aaccee"/>
+  <!-- Padrão de dados (detalhe de lore) -->
+  <rect x="6" y="6" width="2" height="2" fill="#334466" opacity="0.6"/>
+  <rect x="20" y="6" width="2" height="2" fill="#334466" opacity="0.6"/>
+  <!-- Escamas (padrão) -->
+  <rect x="5" y="5" width="4" height="2" fill="#88aacc" opacity="0.4"/>
+  <rect x="11" y="5" width="4" height="2" fill="#88aacc" opacity="0.4"/>
+  <rect x="17" y="5" width="4" height="2" fill="#88aacc" opacity="0.4"/>
+</svg>

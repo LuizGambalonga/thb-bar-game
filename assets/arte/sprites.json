@@ -424,7 +424,7 @@
     }
   },
   "monstros": {
-    "bit-slime": {
+    "grub-binario": {
       "largura": 12, "altura": 10,
       "paleta": { "o": "#081508", "g": "#3ecf5e", "h": "#78f59a", "e": "#ffee44", "b": "#186e2e" },
       "parado": [
@@ -468,7 +468,7 @@
         ]
       ]
     },
-    "icone-zumbi": {
+    "espectro-zumbi": {
       "largura": 12, "altura": 13,
       "paleta": { "o": "#0d2210", "z": "#66bb88", "h": "#99ddaa", "r": "#ee3333", "f": "#55ff99", "d": "#335544" },
       "parado": [
@@ -521,7 +521,7 @@
         ]
       ]
     },
-    "cursor-selvagem": {
+    "raposa-neon": {
       "largura": 12, "altura": 11,
       "paleta": { "o": "#080a1a", "c": "#b8ccff", "e": "#dd44ff", "t": "#2255cc", "k": "#ddeeff" },
       "parado": [
@@ -568,7 +568,7 @@
         ]
       ]
     },
-    "popup": {
+    "morcego-viral": {
       "largura": 12, "altura": 9,
       "paleta": { "o": "#1a0828", "v": "#993dbf", "h": "#cc77ff", "r": "#ff2222", "w": "#ffccff" },
       "parado": [
@@ -609,7 +609,7 @@
         ]
       ]
     },
-    "a-lixeira": {
+    "leviata-dados": {
       "largura": 14, "altura": 13,
       "paleta": { "o": "#0f1520", "g": "#5577aa", "h": "#88aacc", "e": "#44ffcc", "r": "#ff4444", "d": "#334466", "k": "#aaccee" },
       "parado": [
@@ -662,7 +662,7 @@
         ]
       ]
     },
-    "cursor-chefe": {
+    "lobo-corrompido": {
       "largura": 14, "altura": 12,
       "paleta": { "o": "#080914", "c": "#8899cc", "e": "#ffffff", "n": "#1122aa", "t": "#3355ff", "l": "#ffff44", "w": "#bbccff" },
       "parado": [
@@ -712,7 +712,7 @@
         ]
       ]
     },
-    "popup-gigante": {
+    "verme-abismo": {
       "largura": 14, "altura": 14,
       "paleta": { "o": "#1a0030", "v": "#7a1aaa", "h": "#bb66ee", "r": "#ff2222", "w": "#ffccff", "e": "#ffffff", "t": "#dd88ff", "d": "#440066" },
       "parado": [
@@ -768,7 +768,7 @@
         ]
       ]
     },
-    "guardiao-do-espaco": {
+    "golem-hardware": {
       "largura": 14, "altura": 13,
       "paleta": { "o": "#0f1020", "m": "#7788aa", "c": "#55eeff", "r": "#ff5555", "w": "#ffee77", "h": "#aabbcc", "d": "#334455" },
       "parado": [

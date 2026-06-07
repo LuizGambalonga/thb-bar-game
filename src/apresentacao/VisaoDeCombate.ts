@@ -5,7 +5,7 @@
 import type { CombatenteSnapshot, SnapshotCombate } from "../compartilhado/contratos.js";
 import { desenharCenario } from "./arte/cenario.js";
 import { desenharSprite, obterSprite } from "./arte/sprites.js";
-import { desenharImagemHeroi, obterImagemHeroi } from "./arte/imagensHerois.js";
+import { desenharImagemSprite, obterImagemSprite } from "./arte/imagensSprites.js";
 
 const COR_RARIDADE_HEX: Record<string, string> = {
   comum: "#b8c0d0", incomum: "#5cd97a", raro: "#5c8bff", epico: "#b15cff",
@@ -21,6 +21,7 @@ interface Projetil {
   idAlvo: string; dano: number; critico: boolean;
 }
 interface EstadoAnim { faseAtaque: number; alvoXNorm: number; flash: number; atira: boolean; faseMorte: number; }
+interface EfeitoSkill { tipo: string; x: number; y: number; vida: number; cor: string; }
 
 const ALTURA_TASKBAR = 12;
 const FRAMES_INVESTIDA = 16;
@@ -37,6 +38,7 @@ export class VisaoDeCombate {
   private pulsos: Pulso[] = [];
   private readonly anim = new Map<string, EstadoAnim>();
   private readonly vivos = new Map<string, boolean>();
+  private efeitos: EfeitoSkill[] = [];
   private tempo = 0;
 
   constructor(private readonly canvas: HTMLCanvasElement) {
@@ -55,10 +57,14 @@ export class VisaoDeCombate {
       if (evento.tipo === "habilidade") {
         const autor = this.localizar(snapshot, evento.idAutor);
         if (autor) {
-          this.pulsos.push({
-            x: autor.x * this.canvas.width, y: this.centroY(autor.ehHeroi),
-            raio: 4, cor: autor.ehHeroi ? "#ffe08a" : "#ff8a8a", vida: 16,
-          });
+          const x = autor.x * this.canvas.width;
+          const y = this.centroY(autor.ehHeroi);
+          const tipo = this.tipoEfeitoSkill(autor.spriteId);
+          const cor = this.corEfeitoSkill(autor.spriteId);
+          this.efeitos.push({ tipo, x, y, vida: 28, cor });
+          this.pulsos.push({ x, y, raio: 4, cor, vida: 20 });
+          // Partículas adicionais de skill
+          this.explosao(x, y, cor, tipo === "sagrado" ? 12 : 8);
         }
         continue;
       }
@@ -200,6 +206,7 @@ export class VisaoDeCombate {
       this.ultimo.inimigos.forEach((c, i) => this.desenharCombatente(c, i, false));
       this.ultimo.herois.forEach((c, i) => this.desenharCombatente(c, i, true));
     }
+    this.atualizarEfeitos();
     this.atualizarProjeteis();
     for (const p of this.projeteis) this.desenharProjetil(p);
     this.atualizarPulsos();
@@ -226,9 +233,9 @@ export class VisaoDeCombate {
     const chefe = this.ehChefe(c);
     const homeX = c.x * this.canvas.width;
 
-    const classeId = ehHeroi ? c.spriteId.replace("heroi:", "") : null;
-    const usarImagem = classeId !== null && obterImagemHeroi(classeId) !== null;
-    const alturaHeroiPx = sprite.altura * (ehHeroi ? 3 : chefe ? 4 : 3);
+    const usarImagem = obterImagemSprite(c.spriteId) !== null;
+    const escalaBase = ehHeroi ? 3 : chefe ? 4 : 3;
+    const alturaHeroiPx = sprite.altura * escalaBase;
 
     // Morto: anima dissolução por alguns frames, depois some.
     if (!c.vivo) {
@@ -237,9 +244,9 @@ export class VisaoDeCombate {
       const baseY = this.linhaBase() + (1 - alpha) * 10;
       ctx.globalAlpha = alpha;
       if (usarImagem) {
-        desenharImagemHeroi(ctx, classeId!, homeX, baseY, alturaHeroiPx);
+        desenharImagemSprite(ctx, c.spriteId, homeX, baseY, alturaHeroiPx);
       } else {
-        desenharSprite(ctx, sprite, "parado", 0, homeX, baseY, ehHeroi ? 3 : chefe ? 4 : 3);
+        desenharSprite(ctx, sprite, "parado", 0, homeX, baseY, escalaBase);
       }
       ctx.globalAlpha = 1;
       e.faseMorte -= 1;
@@ -281,12 +288,12 @@ export class VisaoDeCombate {
     }
 
     if (usarImagem) {
-      desenharImagemHeroi(ctx, classeId!, x, baseY, alturaFinal);
+      desenharImagemSprite(ctx, c.spriteId, x, baseY, alturaFinal);
     } else {
       desenharSprite(ctx, sprite, animacao, indiceQuadro, x, baseY, escala);
     }
 
-    // Brilho da arma equipada (mais visível ao atacar).
+    // Brilho da arma equipada (mais visível ao atacar, somente JSON sprites).
     if (c.temArma && !usarImagem) {
       ctx.globalAlpha = animacao === "atacar" ? 0.9 : 0.4;
       ctx.fillStyle = "#fff7d0";
@@ -446,5 +453,98 @@ export class VisaoDeCombate {
 
   private linhaBase(): number {
     return this.canvas.height - 30 - ALTURA_TASKBAR;
+  }
+
+  // ---------- efeitos de skill por classe ----------
+
+  private tipoEfeitoSkill(spriteId: string): string {
+    if (spriteId.includes("sacerdote")) return "sagrado";
+    if (spriteId.includes("feiticeira")) return "magico";
+    if (spriteId.includes("cavaleiro") || spriteId.includes("carrasco")) return "guerreiro";
+    return "fisico";
+  }
+
+  private corEfeitoSkill(spriteId: string): string {
+    if (spriteId.includes("sacerdote")) return "#ffd96a";
+    if (spriteId.includes("feiticeira")) return "#c06cff";
+    if (spriteId.includes("cavaleiro")) return "#6aa0ff";
+    if (spriteId.includes("carrasco")) return "#ff6c6c";
+    if (spriteId.includes("patrulheiro")) return "#6ee089";
+    if (spriteId.includes("cacador")) return "#6cf2ff";
+    // Inimigos
+    return "#ff8a8a";
+  }
+
+  private atualizarEfeitos(): void {
+    const ctx = this.ctx;
+    this.efeitos = this.efeitos.filter((e) => e.vida > 0);
+    for (const ef of this.efeitos) {
+      const prog = 1 - ef.vida / 28;
+      ef.vida -= 1;
+      ctx.save();
+
+      if (ef.tipo === "sagrado") {
+        // Anel de luz sagrada + cruz dourada
+        const r = 8 + prog * 28;
+        ctx.globalAlpha = (1 - prog) * 0.85;
+        ctx.strokeStyle = ef.cor;
+        ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.arc(ef.x, ef.y, r, 0, Math.PI * 2); ctx.stroke();
+        // Cruz
+        ctx.globalAlpha = (1 - prog) * 0.6;
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 2;
+        const s = r * 0.8;
+        ctx.beginPath();
+        ctx.moveTo(ef.x, ef.y - s); ctx.lineTo(ef.x, ef.y + s);
+        ctx.moveTo(ef.x - s, ef.y); ctx.lineTo(ef.x + s, ef.y);
+        ctx.stroke();
+      } else if (ef.tipo === "magico") {
+        // 6 orbes girando em espiral
+        for (let i = 0; i < 6; i++) {
+          const ang = (i / 6) * Math.PI * 2 + prog * Math.PI * 3;
+          const r = 6 + prog * 22;
+          const px = ef.x + Math.cos(ang) * r;
+          const py = ef.y + Math.sin(ang) * r;
+          ctx.globalAlpha = (1 - prog) * 0.9;
+          ctx.fillStyle = ef.cor;
+          ctx.beginPath(); ctx.arc(px, py, 3.5, 0, Math.PI * 2); ctx.fill();
+          ctx.globalAlpha = (1 - prog) * 0.5;
+          ctx.fillStyle = "#ffffff";
+          ctx.beginPath(); ctx.arc(px, py, 1.5, 0, Math.PI * 2); ctx.fill();
+        }
+        // Anel externo
+        ctx.globalAlpha = (1 - prog) * 0.4;
+        ctx.strokeStyle = ef.cor;
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.arc(ef.x, ef.y, 6 + prog * 22, 0, Math.PI * 2); ctx.stroke();
+      } else if (ef.tipo === "guerreiro") {
+        // Slash diagonal com brilho
+        const size = 8 + prog * 20;
+        ctx.globalAlpha = (1 - prog) * 0.9;
+        ctx.strokeStyle = ef.cor;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(ef.x - size, ef.y - size * 0.7);
+        ctx.lineTo(ef.x + size, ef.y + size * 0.7);
+        ctx.stroke();
+        ctx.globalAlpha = (1 - prog) * 0.6;
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(ef.x - size * 0.8, ef.y - size * 0.5);
+        ctx.lineTo(ef.x + size * 0.8, ef.y + size * 0.5);
+        ctx.stroke();
+      } else {
+        // Físico: anel simples + flash
+        const r = 6 + prog * 20;
+        ctx.globalAlpha = (1 - prog) * 0.7;
+        ctx.strokeStyle = ef.cor;
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(ef.x, ef.y, r, 0, Math.PI * 2); ctx.stroke();
+      }
+
+      ctx.restore();
+    }
   }
 }

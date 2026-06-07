@@ -1,88 +1,75 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 48" shape-rendering="crispEdges">
-  <!-- Máscara de caveira (skull mask) - a identidade do carrasco -->
-  <!-- Crânio -->
-  <rect x="9" y="2" width="14" height="12" rx="2" fill="#2a0000"/>
-  <rect x="10" y="2" width="12" height="10" rx="2" fill="#ff6c6c"/>
-  <!-- Órbitas (cavidades dos olhos - vazias) -->
-  <rect x="11" y="4" width="4" height="4" fill="#2a0000"/>
-  <rect x="17" y="4" width="4" height="4" fill="#2a0000"/>
-  <!-- Brilho vermelho nos olhos (sobrenatural) -->
-  <rect x="12" y="5" width="2" height="2" fill="#ff2222"/>
-  <rect x="18" y="5" width="2" height="2" fill="#ff2222"/>
-  <rect x="12" y="5" width="1" height="1" fill="#ff9999"/>
-  <rect x="18" y="5" width="1" height="1" fill="#ff9999"/>
-  <!-- Nariz (ausente - apenas cavidade) -->
-  <rect x="15" y="9" width="2" height="2" fill="#2a0000"/>
-  <!-- Sorriso de caveira (dentição) -->
-  <rect x="11" y="12" width="10" height="2" fill="#ffdddd"/>
-  <rect x="12" y="12" width="1" height="2" fill="#2a0000"/>
-  <rect x="14" y="12" width="1" height="2" fill="#2a0000"/>
-  <rect x="16" y="12" width="1" height="2" fill="#2a0000"/>
-  <rect x="18" y="12" width="1" height="2" fill="#2a0000"/>
-
-  <!-- Capuz do executor -->
-  <rect x="8" y="2" width="3" height="12" fill="#2a0000"/>
-  <rect x="21" y="2" width="3" height="12" fill="#2a0000"/>
-  <rect x="9" y="1" width="14" height="3" fill="#1a0000"/>
-
-  <!-- Pescoço curto e grosso -->
-  <rect x="12" y="14" width="8" height="3" fill="#b83a3a"/>
-
-  <!-- Pauldrons MASSIVOS (define a silhueta do carrasco) -->
-  <rect x="1" y="14" width="10" height="8" rx="1" fill="#b83a3a"/>
-  <rect x="21" y="14" width="10" height="8" rx="1" fill="#b83a3a"/>
-  <!-- Espinhos/rebites nos ombros -->
-  <rect x="3" y="13" width="2" height="3" fill="#ff6c6c"/>
-  <rect x="7" y="12" width="2" height="3" fill="#ff6c6c"/>
-  <rect x="23" y="12" width="2" height="3" fill="#ff6c6c"/>
-  <rect x="27" y="13" width="2" height="3" fill="#ff6c6c"/>
-  <!-- Highlights dos ombros -->
-  <rect x="2" y="15" width="4" height="3" fill="#ff9999" opacity="0.4"/>
-  <rect x="26" y="15" width="4" height="3" fill="#ff9999" opacity="0.4"/>
-
-  <!-- Peitoral pesado -->
-  <rect x="9" y="17" width="14" height="16" fill="#b83a3a"/>
-  <rect x="9" y="17" width="14" height="16" fill="none" stroke="#0d0f1a" stroke-width="1"/>
-  <!-- Detalhes do peitoral (ossos cruzados) -->
-  <rect x="9" y="22" width="14" height="1" fill="#ff6c6c"/>
-  <rect x="15" y="17" width="2" height="16" fill="#2a0000" opacity="0.5"/>
-  <!-- Rebite central -->
-  <rect x="14" y="20" width="4" height="4" fill="#ff6c6c"/>
-  <rect x="15" y="19" width="2" height="6" fill="#ff2222" opacity="0.7"/>
-
-  <!-- Machado de duas mãos (a arma mais icônica do carrasco) -->
+  <!-- MACHADO: elemento dominante, lâmina grande e visível -->
   <!-- Cabo do machado -->
-  <rect x="24" y="8" width="3" height="38" fill="#5c3a1a"/>
-  <rect x="24" y="8" width="3" height="38" fill="none" stroke="#0d0f1a" stroke-width="0.5"/>
-  <!-- Lâmina superior -->
-  <rect x="20" y="6" width="8" height="14" rx="1" fill="#b8c0d0"/>
-  <rect x="21" y="7" width="6" height="12" fill="#dde3f0"/>
-  <!-- Borda afiada -->
-  <rect x="19" y="8" width="2" height="10" fill="#8a90a6"/>
-  <!-- Entalhe da lâmina -->
-  <rect x="21" y="9" width="4" height="2" fill="#b83a3a"/>
+  <rect x="22" y="4" width="3" height="40" fill="#5a2808"/>
+  <rect x="23" y="4" width="1" height="40" fill="#7a3810"/>
+  <!-- LÂMINA GRANDE (topo) - objeto mais largo do sprite -->
+  <rect x="16" y="2" width="14" height="16" rx="1" fill="#b8c0d0"/>
+  <rect x="17" y="3" width="12" height="14" fill="#d8e0f0"/>
+  <!-- Fio da lâmina (borda afiada) -->
+  <rect x="16" y="4" width="3" height="12" fill="#8090a0"/>
   <!-- Brilho da lâmina -->
-  <rect x="21" y="7" width="2" height="5" fill="#ffffff" opacity="0.5"/>
-  <!-- Lâmina inferior menor -->
-  <rect x="22" y="20" width="5" height="8" rx="1" fill="#8a90a6"/>
-  <rect x="22" y="21" width="4" height="6" fill="#b8c0d0"/>
+  <rect x="17" y="3" width="5" height="5" fill="#ffffff" opacity="0.5"/>
+  <!-- Sangue/entalhe na lâmina (detalhe de lore) -->
+  <rect x="18" y="8" width="6" height="2" fill="#8a1010" opacity="0.6"/>
+  <!-- Lâmina menor (contralâmina) -->
+  <rect x="18" y="18" width="9" height="8" rx="1" fill="#8090a0"/>
+  <rect x="19" y="19" width="7" height="6" fill="#b8c0d0"/>
 
-  <!-- Cinto de couro pesado -->
-  <rect x="9" y="33" width="14" height="3" fill="#2a0000"/>
-  <rect x="13" y="32" width="6" height="5" fill="#ff6c6c"/>
+  <!-- MÁSCARA DE CAVEIRA — impossível de confundir -->
+  <rect x="9" y="2" width="12" height="14" rx="1" fill="#2a0000"/>
+  <rect x="10" y="3" width="10" height="12" fill="#ff6c6c"/>
+  <!-- Cavidades dos olhos -->
+  <rect x="10" y="5" width="4" height="5" fill="#1a0000"/>
+  <rect x="16" y="5" width="4" height="5" fill="#1a0000"/>
+  <!-- Brilho sobrenatural vermelho nos olhos -->
+  <rect x="11" y="6" width="2" height="3" fill="#ff2222"/>
+  <rect x="17" y="6" width="2" height="3" fill="#ff2222"/>
+  <rect x="11" y="6" width="1" height="1" fill="#ff8888"/>
+  <rect x="17" y="6" width="1" height="1" fill="#ff8888"/>
+  <!-- Nariz (cavidade) -->
+  <rect x="14" y="10" width="2" height="3" fill="#1a0000"/>
+  <!-- Dentes (dentição exposta) -->
+  <rect x="10" y="14" width="10" height="2" fill="#ffdddd"/>
+  <rect x="11" y="14" width="1" height="2" fill="#2a0000"/>
+  <rect x="13" y="14" width="1" height="2" fill="#2a0000"/>
+  <rect x="15" y="14" width="1" height="2" fill="#2a0000"/>
+  <rect x="17" y="14" width="1" height="2" fill="#2a0000"/>
 
-  <!-- Calças/greaves de combate -->
-  <rect x="9" y="36" width="6" height="10" rx="1" fill="#b83a3a"/>
-  <rect x="17" y="36" width="6" height="10" rx="1" fill="#b83a3a"/>
-  <!-- Proteção do joelho (espinhosa) -->
-  <rect x="10" y="39" width="4" height="4" fill="#ff6c6c"/>
-  <rect x="18" y="39" width="4" height="4" fill="#ff6c6c"/>
-  <rect x="11" y="38" width="2" height="2" fill="#ff2222"/>
-  <rect x="19" y="38" width="2" height="2" fill="#ff2222"/>
-  <!-- Contornos -->
-  <rect x="9" y="36" width="6" height="10" rx="1" fill="none" stroke="#0d0f1a" stroke-width="1"/>
-  <rect x="17" y="36" width="6" height="10" rx="1" fill="none" stroke="#0d0f1a" stroke-width="1"/>
+  <!-- OMBROS MASSIVOS — largura define o carrasco -->
+  <rect x="1" y="14" width="10" height="9" rx="1" fill="#b83a3a"/>
+  <rect x="21" y="14" width="10" height="9" rx="1" fill="#b83a3a"/>
+  <!-- Espinhos nos ombros -->
+  <rect x="3" y="12" width="2" height="4" fill="#ff6c6c"/>
+  <rect x="7" y="11" width="2" height="4" fill="#ff6c6c"/>
+  <rect x="23" y="11" width="2" height="4" fill="#ff6c6c"/>
+  <rect x="27" y="12" width="2" height="4" fill="#ff6c6c"/>
+
+  <!-- PESCOÇO muscular -->
+  <rect x="11" y="16" width="8" height="4" fill="#b83a3a"/>
+
+  <!-- PEITORAL pesado -->
+  <rect x="8" y="20" width="14" height="14" fill="#b83a3a"/>
+  <rect x="8" y="26" width="14" height="2" fill="#ff6c6c"/>
+  <rect x="14" y="20" width="2" height="14" fill="#7a1a1a" opacity="0.5"/>
+  <!-- Rebite central ameaçador -->
+  <rect x="13" y="23" width="4" height="4" fill="#ff6c6c"/>
+  <rect x="14" y="22" width="2" height="6" fill="#ff2222" opacity="0.7"/>
+
+  <!-- CINTO de couro pesado -->
+  <rect x="8" y="34" width="14" height="4" fill="#2a0000"/>
+  <rect x="12" y="33" width="6" height="6" fill="#ff6c6c"/>
+
+  <!-- GREAVES de combate -->
+  <rect x="8" y="38" width="6" height="10" fill="#b83a3a"/>
+  <rect x="18" y="38" width="6" height="10" fill="#b83a3a"/>
+  <!-- Joelheiras com espinhos -->
+  <rect x="9" y="41" width="4" height="4" fill="#ff6c6c"/>
+  <rect x="19" y="41" width="4" height="4" fill="#ff6c6c"/>
+  <rect x="10" y="40" width="2" height="2" fill="#ff2222"/>
+  <rect x="20" y="40" width="2" height="2" fill="#ff2222"/>
   <!-- Botas pesadas -->
-  <rect x="8" y="46" width="8" height="2" rx="1" fill="#1a0000"/>
-  <rect x="16" y="46" width="8" height="2" rx="1" fill="#1a0000"/>
+  <rect x="7" y="48" width="8" height="0" fill="#1a0000"/>
+  <rect x="7" y="46" width="8" height="2" fill="#1a0000"/>
+  <rect x="17" y="46" width="8" height="2" fill="#1a0000"/>
 </svg>
