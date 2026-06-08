@@ -2,7 +2,8 @@
 // Intenções sobem (renderer → main); snapshots descem (main → renderer).
 
 import type {
-  Dificuldade, Elemento, EspacoEquipamento, IdClasse, PosicaoFormacao, Raridade,
+  Dificuldade, Elemento, EspacoEquipamento, EstadoMovimento, IdClasse,
+  PosicaoFormacao, Raridade,
 } from "../nucleo/dominio/tipos.js";
 
 export const CANAL_INTENCAO = "jogo:intencao";
@@ -43,12 +44,13 @@ export interface CombatenteSnapshot {
   vivo: boolean;
   vidaPct: number; // 0..1
   x: number; // 0..1 (posição horizontal na arena)
+  estadoMov: EstadoMovimento;
   elemento: Elemento;
 }
 
 export type EventoSnapshot =
   | { tipo: "dano"; idAutor: string; idAlvo: string; quantidade: number; critico: boolean }
-  | { tipo: "habilidade"; idAutor: string }
+  | { tipo: "habilidade"; idAutor: string; idHabilidade: string; tipoSkill: string; idsAlvos: string[]; elemento: Elemento }
   | { tipo: "morte"; id: string }
   | { tipo: "drop"; raridade: Raridade }
   | { tipo: "mochilaCheia" }

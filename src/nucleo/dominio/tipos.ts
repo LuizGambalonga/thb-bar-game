@@ -32,6 +32,15 @@ export type Dificuldade = "normal" | "dificil" | "pesadelo" | "kernelPanic";
 
 export type PosicaoFormacao = "frente" | "tras";
 
+/** Estado de movimento/ação de um combatente — guia a animação no renderer. */
+export type EstadoMovimento =
+  | "parado"
+  | "avancar"
+  | "recuar"
+  | "atacar"
+  | "conjurar"
+  | "morrendo";
+
 /** Tipo visual de projétil para ataques à distância (ausência = corpo a corpo). */
 export type TipoProjetil = "flecha" | "fogo" | "gelo" | "raio";
 
@@ -71,6 +80,8 @@ export interface DefHeroi {
   habilidades: DefHabilidade[];
   desbloqueio: { custoOuro: number; requer?: string };
   projetil?: TipoProjetil;
+  /** true = avança até o inimigo (melee); ausência/false = segura a linha. */
+  corpoACorpo?: boolean;
 }
 
 export interface DefMonstro {

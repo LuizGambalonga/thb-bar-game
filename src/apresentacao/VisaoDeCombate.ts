@@ -1,11 +1,8 @@
-// Renderiza o combate em Canvas2D: cenário, sprites animados que avançam para
-// atacar, PROJÉTEIS visíveis com rastro (flecha/fogo/gelo), impacto no alvo e
-// ANIMAÇÃO DE MORTE (dissolver + partículas). Loop em requestAnimationFrame.
-
 import type { CombatenteSnapshot, SnapshotCombate } from "../compartilhado/contratos.js";
 import { desenharCenario } from "./arte/cenario.js";
 import { desenharSprite, obterSprite } from "./arte/sprites.js";
 import { desenharImagemSprite, obterImagemSprite } from "./arte/imagensSprites.js";
+import { desenharFolha, temFolha } from "./arte/folhasSprite.js";
 
 const COR_RARIDADE_HEX: Record<string, string> = {
   comum: "#b8c0d0", incomum: "#5cd97a", raro: "#5c8bff", epico: "#b15cff",
@@ -20,14 +17,34 @@ interface Projetil {
   prog: number; passo: number; rastro: { x: number; y: number }[];
   idAlvo: string; dano: number; critico: boolean;
 }
-interface EstadoAnim { faseAtaque: number; alvoXNorm: number; flash: number; atira: boolean; faseMorte: number; }
-interface EfeitoSkill { tipo: string; x: number; y: number; vida: number; cor: string; }
+interface EstadoAnim {
+  faseAtaque: number; alvoXNorm: number; flash: number; atira: boolean; faseMorte: number;
+  renderX: number | undefined; // X interpolado em tela (suavização entre snapshots)
+}
+// Efeito de habilidade: conjuração que viaja (dano) ou aura estática (cura/buff/resurg).
+interface EfeitoSkill {
+  tipo: "viaja" | "cura" | "buff" | "resurg";
+  elemento: string; cor: string;
+  x: number; y: number; ox: number; oy: number; tx: number; ty: number;
+  prog: number; passo: number; vida: number; rastro: { x: number; y: number }[];
+}
 
 const ALTURA_TASKBAR = 12;
-const FRAMES_INVESTIDA = 16;
-const FRACAO_AVANCO = 0.6;
-const FRAMES_MORTE = 24;
-const VELOCIDADE_PROJETIL = 6; // pixels por frame
+const FRAMES_INVESTIDA = 44;
+const FRAMES_MORTE = 28;
+const VELOCIDADE_PROJETIL = 5;
+const VELOCIDADE_SKILL = 6;
+
+// Altura real dos SVGs de herói (viewBox 14×24).
+const ALTURA_SVG_HEROI = 24;
+
+// Alturas-alvo (px) ao desenhar via sprite-sheet. 64 = 2× nítido sobre frames 32px.
+const ALT_ALVO_HEROI = 64;
+const ALT_ALVO_MONSTRO = 54;
+const ALT_ALVO_BOSS = 96;
+
+// Suavização da posição (0..1): maior = segue o snapshot mais rápido.
+const SUAVIZACAO_POS = 0.35;
 
 export class VisaoDeCombate {
   private readonly ctx: CanvasRenderingContext2D;
@@ -53,19 +70,15 @@ export class VisaoDeCombate {
     this.ultimo = snapshot;
     this.detectarMortes(snapshot);
 
+    // Autores que conjuraram habilidade neste tick (para não duplicar o golpe básico).
+    const autoresHabilidade = new Set<string>();
+    for (const evento of snapshot.eventos) {
+      if (evento.tipo === "habilidade") autoresHabilidade.add(evento.idAutor);
+    }
+
     for (const evento of snapshot.eventos) {
       if (evento.tipo === "habilidade") {
-        const autor = this.localizar(snapshot, evento.idAutor);
-        if (autor) {
-          const x = autor.x * this.canvas.width;
-          const y = this.centroY(autor.ehHeroi);
-          const tipo = this.tipoEfeitoSkill(autor.spriteId);
-          const cor = this.corEfeitoSkill(autor.spriteId);
-          this.efeitos.push({ tipo, x, y, vida: 28, cor });
-          this.pulsos.push({ x, y, raio: 4, cor, vida: 20 });
-          // Partículas adicionais de skill
-          this.explosao(x, y, cor, tipo === "sagrado" ? 12 : 8);
-        }
+        this.dispararHabilidade(snapshot, evento);
         continue;
       }
       if (evento.tipo === "mochilaCheia") {
@@ -80,6 +93,12 @@ export class VisaoDeCombate {
       const alvo = this.localizar(snapshot, evento.idAlvo);
       if (!autor || !alvo) continue;
 
+      // Dano vindo de habilidade: o VFX da skill já mostra a viagem; aqui só o número.
+      if (autoresHabilidade.has(evento.idAutor)) {
+        this.aplicarImpacto(alvo, evento.quantidade, evento.critico);
+        continue;
+      }
+
       if (autor.projetil) {
         this.dispararProjetil(autor, alvo, evento.quantidade, evento.critico);
       } else {
@@ -92,15 +111,149 @@ export class VisaoDeCombate {
     }
   }
 
-  // ---------- projéteis ----------
+  // ---------- habilidades (conjuração → viagem → impacto) ----------
+
+  private dispararHabilidade(snapshot: SnapshotCombate, evento: Extract<SnapshotCombate["eventos"][number], { tipo: "habilidade" }>): void {
+    const autor = this.localizar(snapshot, evento.idAutor);
+    if (!autor) return;
+    const ox = (this.estado(autor.id).renderX ?? autor.x * this.canvas.width);
+    const oy = this.centroY(autor.ehHeroi);
+    const cor = this.corElemento(evento.elemento, autor.spriteId);
+
+    // Estouro de conjuração saindo do lançador.
+    this.pulsos.push({ x: ox, y: oy, raio: 5, cor, vida: 22 });
+    this.explosao(ox, oy, cor, 12);
+
+    if (evento.tipoSkill === "dano") {
+      const alvos = evento.idsAlvos.length ? evento.idsAlvos : [];
+      for (const idAlvo of alvos) {
+        const alvo = this.localizar(snapshot, idAlvo);
+        if (!alvo) continue;
+        const tx = alvo.x * this.canvas.width;
+        const ty = this.centroY(alvo.ehHeroi);
+        const distancia = Math.hypot(tx - ox, ty - oy);
+        this.efeitos.push({
+          tipo: "viaja", elemento: evento.elemento, cor,
+          x: ox, y: oy, ox, oy, tx, ty, prog: 0,
+          passo: VELOCIDADE_SKILL / Math.max(1, distancia), vida: 60, rastro: [],
+        });
+      }
+    } else if (evento.tipoSkill === "cura") {
+      const alvo = evento.idsAlvos[0] ? this.localizar(snapshot, evento.idsAlvos[0]) : autor;
+      const tx = (alvo ?? autor).x * this.canvas.width;
+      const ty = this.centroY((alvo ?? autor).ehHeroi);
+      this.efeitos.push({ tipo: "cura", elemento: "vida", cor: "#7df0a0", x: tx, y: ty, ox: tx, oy: ty, tx, ty, prog: 0, passo: 0.03, vida: 34, rastro: [] });
+    } else if (evento.tipoSkill === "ressuscitar") {
+      const alvo = evento.idsAlvos[0] ? this.localizar(snapshot, evento.idsAlvos[0]) : autor;
+      const tx = (alvo ?? autor).x * this.canvas.width;
+      this.efeitos.push({ tipo: "resurg", elemento: "luz", cor: "#ffe07a", x: tx, y: this.linhaBase(), ox: tx, oy: this.linhaBase(), tx, ty: this.linhaBase(), prog: 0, passo: 0.025, vida: 40, rastro: [] });
+    } else {
+      // buff próprio
+      this.efeitos.push({ tipo: "buff", elemento: "buff", cor, x: ox, y: oy, ox, oy, tx: ox, ty: oy, prog: 0, passo: 0.04, vida: 26, rastro: [] });
+    }
+  }
+
+  private atualizarEfeitos(): void {
+    const restantes: EfeitoSkill[] = [];
+    for (const ef of this.efeitos) {
+      ef.vida -= 1;
+      if (ef.tipo === "viaja") {
+        ef.prog += ef.passo;
+        ef.x = ef.ox + (ef.tx - ef.ox) * ef.prog;
+        ef.y = ef.oy + (ef.ty - ef.oy) * ef.prog;
+        ef.rastro.push({ x: ef.x, y: ef.y });
+        if (ef.rastro.length > 12) ef.rastro.shift();
+        this.desenharSkillViaja(ef);
+        if (ef.prog >= 1) { this.explosao(ef.tx, ef.ty, ef.cor, 16); this.pulsos.push({ x: ef.tx, y: ef.ty, raio: 4, cor: ef.cor, vida: 18 }); continue; }
+      } else if (ef.tipo === "cura") {
+        this.desenharCura(ef);
+      } else if (ef.tipo === "resurg") {
+        this.desenharResurg(ef);
+      } else {
+        this.desenharBuff(ef);
+      }
+      if (ef.vida > 0) restantes.push(ef);
+    }
+    this.efeitos = restantes;
+  }
+
+  private desenharSkillViaja(ef: EfeitoSkill): void {
+    const ctx = this.ctx;
+    ef.rastro.forEach((r, i) => {
+      const a = i / ef.rastro.length;
+      ctx.globalAlpha = a * 0.55;
+      ctx.fillStyle = ef.cor;
+      const t = 2 + Math.round(a * 6);
+      ctx.beginPath(); ctx.arc(r.x, r.y, t, 0, Math.PI * 2); ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+    const r = 7 + Math.sin(this.tempo * 0.5) * 1.5;
+    const grad = ctx.createRadialGradient(ef.x, ef.y, 0, ef.x, ef.y, r * 1.6);
+    grad.addColorStop(0, "#ffffff");
+    grad.addColorStop(0.4, ef.cor);
+    grad.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.arc(ef.x, ef.y, r * 1.6, 0, Math.PI * 2); ctx.fill();
+  }
+
+  private desenharCura(ef: EfeitoSkill): void {
+    const ctx = this.ctx;
+    const prog = 1 - ef.vida / 34;
+    ctx.save();
+    ctx.globalAlpha = (1 - prog) * 0.9;
+    ctx.strokeStyle = ef.cor; ctx.lineWidth = 2;
+    const r = 6 + prog * 22;
+    ctx.beginPath(); ctx.arc(ef.x, ef.y - 18, r, 0, Math.PI * 2); ctx.stroke();
+    // cruzinhas subindo
+    ctx.fillStyle = "#d8ffe6";
+    for (let i = 0; i < 3; i++) {
+      const a = (i / 3) * Math.PI * 2 + prog * 2;
+      const px = ef.x + Math.cos(a) * r * 0.7;
+      const py = ef.y - 18 - prog * 16 + Math.sin(a) * 3;
+      ctx.fillRect(px - 1, py - 3, 2, 6);
+      ctx.fillRect(px - 3, py - 1, 6, 2);
+    }
+    ctx.restore();
+  }
+
+  private desenharResurg(ef: EfeitoSkill): void {
+    const ctx = this.ctx;
+    const prog = 1 - ef.vida / 40;
+    ctx.save();
+    const alturaColuna = 44;
+    const grad = ctx.createLinearGradient(ef.x, ef.y, ef.x, ef.y - alturaColuna);
+    grad.addColorStop(0, `rgba(255,224,122,${(1 - prog) * 0.8})`);
+    grad.addColorStop(1, "rgba(255,224,122,0)");
+    ctx.fillStyle = grad;
+    const larg = 14 * (1 - prog * 0.4);
+    ctx.fillRect(ef.x - larg / 2, ef.y - alturaColuna, larg, alturaColuna);
+    ctx.globalAlpha = (1 - prog) * 0.9;
+    ctx.strokeStyle = ef.cor; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.ellipse(ef.x, ef.y, 16 * (0.4 + prog), 5, 0, 0, Math.PI * 2); ctx.stroke();
+    ctx.restore();
+  }
+
+  private desenharBuff(ef: EfeitoSkill): void {
+    const ctx = this.ctx;
+    const prog = 1 - ef.vida / 26;
+    ctx.save();
+    ctx.globalAlpha = (1 - prog) * 0.8;
+    ctx.strokeStyle = ef.cor; ctx.lineWidth = 3;
+    const r = 8 + prog * 26;
+    ctx.beginPath(); ctx.arc(ef.x, ef.y, r, Math.PI * 0.1, Math.PI * 0.9, false); ctx.stroke();
+    ctx.beginPath(); ctx.arc(ef.x, ef.y, r, Math.PI * 1.1, Math.PI * 1.9, false); ctx.stroke();
+    ctx.restore();
+  }
+
+  // ---------- projéteis (ataques básicos à distância) ----------
 
   private dispararProjetil(autor: CombatenteSnapshot, alvo: CombatenteSnapshot, dano: number, critico: boolean): void {
     const e = this.estado(autor.id);
-    e.faseAtaque = 10;
+    e.faseAtaque = 14;
     e.alvoXNorm = alvo.x;
-    e.atira = true; // pose de tiro com recuo, sem investida
+    e.atira = true;
 
-    const ox = autor.x * this.canvas.width;
+    const ox = (e.renderX ?? autor.x * this.canvas.width);
     const oy = this.centroY(autor.ehHeroi);
     const tx = alvo.x * this.canvas.width;
     const ty = this.centroY(alvo.ehHeroi);
@@ -120,12 +273,8 @@ export class VisaoDeCombate {
       p.y = p.oy + (p.ty - p.oy) * p.prog;
       p.rastro.push({ x: p.x, y: p.y });
       if (p.rastro.length > 9) p.rastro.shift();
-
-      if (p.prog >= 1) {
-        this.impactoProjetil(p);
-      } else {
-        restantes.push(p);
-      }
+      if (p.prog >= 1) this.impactoProjetil(p);
+      else restantes.push(p);
     }
     this.projeteis = restantes;
   }
@@ -156,10 +305,10 @@ export class VisaoDeCombate {
       const eraVivo = this.vivos.get(c.id);
       if (eraVivo && !c.vivo && this.estado(c.id).faseMorte === 0) {
         this.estado(c.id).faseMorte = FRAMES_MORTE;
-        const x = c.x * this.canvas.width;
-        this.explosao(x, this.centroY(c.ehHeroi), c.ehHeroi ? "#6cf2c9" : "#ff6c8b", 16);
+        const x = (this.estado(c.id).renderX ?? c.x * this.canvas.width);
+        this.explosao(x, this.centroY(c.ehHeroi), c.ehHeroi ? "#6cf2c9" : "#ff6c8b", 18);
       } else if (c.vivo) {
-        this.estado(c.id).faseMorte = 0; // reviveu
+        this.estado(c.id).faseMorte = 0;
       }
       this.vivos.set(c.id, c.vivo);
     }
@@ -170,10 +319,10 @@ export class VisaoDeCombate {
   private explosao(x: number, y: number, cor: string, quantidade: number): void {
     for (let i = 0; i < quantidade; i++) {
       const ang = (Math.PI * 2 * i) / quantidade + Math.random();
-      const vel = 0.8 + Math.random() * 1.6;
+      const vel = 0.8 + Math.random() * 1.8;
       this.particulas.push({
-        x, y, vx: Math.cos(ang) * vel, vy: Math.sin(ang) * vel - 0.6,
-        vida: 18 + Math.random() * 10, cor, tam: 1 + Math.floor(Math.random() * 2),
+        x, y, vx: Math.cos(ang) * vel, vy: Math.sin(ang) * vel - 0.8,
+        vida: 20 + Math.random() * 12, cor, tam: 1 + Math.floor(Math.random() * 2),
       });
     }
   }
@@ -182,8 +331,8 @@ export class VisaoDeCombate {
     const ctx = this.ctx;
     this.particulas = this.particulas.filter((p) => p.vida > 0);
     for (const p of this.particulas) {
-      p.x += p.vx; p.y += p.vy; p.vy += 0.08; p.vida -= 1;
-      ctx.globalAlpha = Math.max(0, p.vida / 28);
+      p.x += p.vx; p.y += p.vy; p.vy += 0.09; p.vida -= 1;
+      ctx.globalAlpha = Math.max(0, p.vida / 30);
       ctx.fillStyle = p.cor;
       ctx.fillRect(Math.round(p.x), Math.round(p.y), p.tam, p.tam);
     }
@@ -218,104 +367,255 @@ export class VisaoDeCombate {
     const ctx = this.ctx;
     this.pulsos = this.pulsos.filter((p) => p.vida > 0);
     for (const p of this.pulsos) {
-      p.raio += 1.6; p.vida -= 1;
-      ctx.globalAlpha = Math.max(0, p.vida / 16) * 0.7;
+      p.raio += 1.8; p.vida -= 1;
+      ctx.globalAlpha = Math.max(0, p.vida / 18) * 0.7;
       ctx.strokeStyle = p.cor; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.arc(p.x, p.y, p.raio, 0, Math.PI * 2); ctx.stroke();
     }
     ctx.globalAlpha = 1;
   }
 
+  // ---------- combatente principal ----------
+
   private desenharCombatente(c: CombatenteSnapshot, indice: number, ehHeroi: boolean): void {
-    const e = this.anim.get(c.id);
+    const e = this.estado(c.id);
     const ctx = this.ctx;
-    const sprite = obterSprite(c.spriteId);
     const chefe = this.ehChefe(c);
+    const personagem = this.personagemDe(c.spriteId);
+    const usaFolha = temFolha(personagem);
+
+    // Posição interpolada (suaviza os passos de 10 Hz para 60 fps).
     const homeX = c.x * this.canvas.width;
+    if (e.renderX === undefined) e.renderX = homeX;
+    e.renderX += (homeX - e.renderX) * SUAVIZACAO_POS;
 
-    const usarImagem = obterImagemSprite(c.spriteId) !== null;
-    const escalaBase = ehHeroi ? 3 : chefe ? 4 : 3;
-    const alturaHeroiPx = sprite.altura * escalaBase;
+    const alturaAlvo = ehHeroi ? ALT_ALVO_HEROI : chefe ? ALT_ALVO_BOSS : ALT_ALVO_MONSTRO;
+    const espelhar = !ehHeroi; // inimigos enfrentam os heróis (olham à esquerda)
 
-    // Morto: anima dissolução por alguns frames, depois some.
+    // ----- morto: animação de morte / dissolução -----
     if (!c.vivo) {
-      if (!e || e.faseMorte <= 0) return;
-      const alpha = e.faseMorte / FRAMES_MORTE;
-      const baseY = this.linhaBase() + (1 - alpha) * 10;
-      ctx.globalAlpha = alpha;
-      if (usarImagem) {
-        desenharImagemSprite(ctx, c.spriteId, homeX, baseY, alturaHeroiPx);
+      if (e.faseMorte <= 0) return;
+      const prog = 1 - e.faseMorte / FRAMES_MORTE;
+      const x = Math.round(e.renderX);
+      if (usaFolha) {
+        desenharFolha(ctx, personagem, "morrer", { relogio: this.tempo, prog, loop: false }, x, this.linhaBase(), alturaAlvo, espelhar);
       } else {
-        desenharSprite(ctx, sprite, "parado", 0, homeX, baseY, escalaBase);
+        this.desenharFallback(c, ehHeroi, chefe, x, this.linhaBase() + prog * 12, 0, 1, "parado", 1 - prog);
       }
-      ctx.globalAlpha = 1;
       e.faseMorte -= 1;
       return;
     }
 
-    let escala = ehHeroi ? 3 : chefe ? 4 : 3;
-    const bob = Math.sin(this.tempo * 0.16 + indice * 1.3) * 2;
-    let x = homeX;
-    let animacao: "parado" | "atacar" = "parado";
-
-    if (e && e.faseAtaque > 0) {
-      const progresso = (e.atira ? 10 - e.faseAtaque : FRAMES_INVESTIDA - e.faseAtaque) / (e.atira ? 10 : FRAMES_INVESTIDA);
-      const arco = Math.sin(progresso * Math.PI);
-      const alvoX = e.alvoXNorm * this.canvas.width;
-      const dir = Math.sign(alvoX - homeX) || 1;
-      x = e.atira ? homeX - dir * 4 * arco : homeX + (alvoX - homeX) * FRACAO_AVANCO * arco;
-      escala *= 1 + (e.atira ? 0.05 : 0.12) * arco;
-      if (progresso > 0.2 && progresso < 0.85) animacao = "atacar";
-      e.faseAtaque -= 1;
+    // ----- animação efetiva -----
+    const bob = Math.sin(this.tempo * 0.16 + indice * 1.3) * 1.5;
+    let animKey = "parado";
+    let loop = true;
+    let prog = 0;
+    if (e.faseAtaque > 0) {
+      animKey = "atacar"; loop = false;
+      const total = e.atira ? 14 : FRAMES_INVESTIDA;
+      prog = (total - e.faseAtaque) / total;
+    } else if (c.estadoMov === "conjurar") {
+      animKey = "conjurar"; loop = true;
+    } else if (c.estadoMov === "avancar" || c.estadoMov === "recuar") {
+      animKey = "andar"; loop = true;
     }
-    if (e && e.flash > 0) { x += e.flash % 2 === 0 ? 2 : -2; e.flash -= 1; }
 
+    let x = e.renderX;
+    if (e.flash > 0) { x += e.flash % 2 === 0 ? 2 : -2; e.flash -= 1; }
     const baseY = this.linhaBase() + bob;
-    const alturaFinal = usarImagem ? alturaHeroiPx * (escala / (ehHeroi ? 3 : 4)) : sprite.altura * escala;
-    const indiceQuadro = Math.floor(this.tempo / 9);
 
-    // Aura do melhor equipamento (cor da raridade).
-    if (c.raridadeEquip) {
-      const cor = COR_RARIDADE_HEX[c.raridadeEquip] ?? "#ffffff";
-      const pulso = 0.4 + 0.2 * Math.sin(this.tempo * 0.2 + indice);
-      ctx.save();
-      ctx.globalAlpha = pulso;
-      ctx.fillStyle = cor;
-      ctx.beginPath();
-      ctx.ellipse(x, baseY - 2, (usarImagem ? alturaFinal * (32 / 48) : sprite.largura * escala) * 0.55, 5, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-    }
+    this.desenharSombra(x, alturaAlvo);
+    if (c.raridadeEquip) this.desenharAura(c.raridadeEquip, x, baseY, alturaAlvo, indice);
 
-    if (usarImagem) {
-      desenharImagemSprite(ctx, c.spriteId, x, baseY, alturaFinal);
+    if (usaFolha) {
+      desenharFolha(ctx, personagem, animKey, { relogio: this.tempo, prog, loop }, Math.round(x), Math.round(baseY), alturaAlvo, espelhar);
     } else {
-      desenharSprite(ctx, sprite, animacao, indiceQuadro, x, baseY, escala);
+      this.desenharFallback(c, ehHeroi, chefe, x, baseY, indice, 1, animKey, 1, e, prog);
     }
 
-    // Brilho da arma equipada (mais visível ao atacar, somente JSON sprites).
-    if (c.temArma && !usarImagem) {
-      ctx.globalAlpha = animacao === "atacar" ? 0.9 : 0.4;
-      ctx.fillStyle = "#fff7d0";
-      ctx.fillRect(Math.round(x + sprite.largura * escala * 0.4), Math.round(baseY - sprite.altura * escala * 0.55), 2, 6);
-      ctx.globalAlpha = 1;
-    }
-
-    const topo = baseY - alturaFinal;
+    // HUD
+    const topo = baseY - alturaAlvo;
     if (chefe) {
-      this.desenharBarraBoss(x, topo - 14, c.vidaPct, c.nome);
+      this.desenharBarraBoss(x, topo - 6, c.vidaPct, c.nome);
     } else {
-      this.desenharNome(c.nome, x, topo - 14, ehHeroi);
-      this.desenharBarraVida(x, topo - 6, c.vidaPct, false);
+      this.desenharNome(c.nome, x, topo - 6, ehHeroi);
+      this.desenharBarraVida(x, topo + 2, c.vidaPct, false);
     }
   }
 
-  // ---------- desenho de projétil por tipo ----------
+  private desenharSombra(x: number, altura: number): void {
+    const ctx = this.ctx;
+    ctx.save();
+    ctx.globalAlpha = 0.22;
+    ctx.fillStyle = "#000";
+    ctx.beginPath();
+    ctx.ellipse(x, this.linhaBase() + 4, altura * 0.20, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  private desenharAura(raridade: string, x: number, baseY: number, altura: number, indice: number): void {
+    const ctx = this.ctx;
+    const cor = COR_RARIDADE_HEX[raridade] ?? "#ffffff";
+    const pulso = 0.35 + 0.18 * Math.sin(this.tempo * 0.2 + indice);
+    ctx.save();
+    ctx.globalAlpha = pulso;
+    ctx.fillStyle = cor;
+    ctx.beginPath();
+    ctx.ellipse(x, baseY - 2, altura * 0.27, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // ----- fallback SVG/pixel quando não há sprite-sheet -----
+
+  private desenharFallback(
+    c: CombatenteSnapshot, ehHeroi: boolean, chefe: boolean,
+    xBase: number, baseY: number, indice: number, _mult: number,
+    animKey: string, alpha: number, e?: EstadoAnim, progAtaque = 0,
+  ): void {
+    const ctx = this.ctx;
+    const sprite = obterSprite(c.spriteId);
+    const imgSprite = obterImagemSprite(c.spriteId);
+    const usarImagem = imgSprite !== null;
+
+    const escalaBase = ehHeroi ? 3 : chefe ? 4 : 3;
+    const altSVGHeroi = ALTURA_SVG_HEROI * escalaBase;
+    const altBase = usarImagem && ehHeroi ? altSVGHeroi : sprite.altura * escalaBase;
+
+    let escalaExtra = 1.0;
+    let angulo = Math.sin(this.tempo * 0.07 + indice * 1.1) * 0.022;
+    let yBob = 0;
+    let x = xBase;
+
+    // Movimento procedural a partir do estado (anda/conjura/ataca) para dar vida ao SVG.
+    if (animKey === "andar") {
+      const passada = Math.sin(this.tempo * 0.4 + indice);
+      yBob = -Math.abs(passada) * 2.5;
+      angulo += (c.estadoMov === "recuar" ? -1 : 1) * 0.06;
+    } else if (animKey === "conjurar") {
+      escalaExtra += 0.05 + 0.03 * Math.sin(this.tempo * 0.6);
+      angulo += Math.sin(this.tempo * 0.5) * 0.05;
+    } else if (animKey === "atacar" && e) {
+      const dir = ehHeroi ? 1 : -1;
+      if (e.atira) {
+        const arco = Math.sin(progAtaque * Math.PI);
+        x = xBase - dir * 6 * arco;
+        angulo += dir * 0.14 * arco;
+        escalaExtra += 0.05 * arco;
+      } else if (progAtaque < 0.6) {
+        const t = progAtaque / 0.6;
+        x = xBase + dir * 10 * t;
+        angulo += dir * 0.10 * Math.sin(t * Math.PI * 4);
+        yBob = -Math.abs(Math.sin(t * Math.PI * 4)) * 3;
+        escalaExtra += 0.1 * t;
+      } else {
+        const t = (progAtaque - 0.6) / 0.4;
+        x = xBase + dir * 10 * (1 - t);
+        escalaExtra += 0.16 - t * 0.1;
+      }
+    }
+
+    const alturaFinal = altBase * escalaExtra;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.translate(Math.round(x), Math.round(baseY + yBob));
+    if (!ehHeroi) ctx.scale(-1, 1);
+    ctx.rotate(angulo);
+    ctx.imageSmoothingEnabled = false;
+    if (usarImagem) {
+      desenharImagemSprite(ctx, c.spriteId, 0, 0, alturaFinal);
+    } else {
+      const indiceQuadro = Math.floor(this.tempo / 9);
+      desenharSprite(ctx, sprite, animKey === "atacar" ? "atacar" : "parado", indiceQuadro, 0, 0, Math.round(escalaBase * escalaExtra));
+    }
+    if (ehHeroi && c.temArma) this.desenharArma(ctx, c.spriteId, alturaFinal);
+    ctx.restore();
+    ctx.globalAlpha = 1;
+  }
+
+  // ---------- arma por classe (context já em x,baseY+rotate) ----------
+
+  private desenharArma(ctx: CanvasRenderingContext2D, spriteId: string, h: number): void {
+    const bx = h * 0.26;
+    const by = -(h * 0.52);
+    ctx.save();
+    ctx.translate(bx, by);
+
+    if (spriteId.includes("cavaleiro")) {
+      ctx.fillStyle = "#c8d4f0"; ctx.fillRect(-1, -h*0.32, 3, h*0.38);
+      ctx.fillStyle = "#e8f0ff"; ctx.fillRect(0, -h*0.32, 1, h*0.38);
+      ctx.fillStyle = "#d0a828"; ctx.fillRect(-7, -h*0.01, 15, 3);
+      ctx.fillStyle = "#8a5820"; ctx.fillRect(-1, 3, 3, h*0.13);
+      ctx.fillStyle = "#c8a030"; ctx.fillRect(-1, h*0.13+2, 4, 4);
+    } else if (spriteId.includes("feiticeira")) {
+      const rO = h * 0.078;
+      ctx.fillStyle = "#7040c0"; ctx.fillRect(-1, -h*0.40, 2, h*0.52);
+      ctx.fillStyle = "#d080ff";
+      ctx.beginPath(); ctx.arc(0, -h*0.40, rO, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = "rgba(255,220,255,0.85)";
+      ctx.beginPath(); ctx.arc(-rO*0.45, -h*0.42, rO*0.38, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = "rgba(200,120,255,0.5)"; ctx.lineWidth = 1;
+      for (let i = 0; i < 4; i++) {
+        const a = (i / 4) * Math.PI * 2 + this.tempo * 0.04;
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(a)*rO, -h*0.40 + Math.sin(a)*rO);
+        ctx.lineTo(Math.cos(a)*rO*2.5, -h*0.40 + Math.sin(a)*rO*2.5);
+        ctx.stroke();
+      }
+    } else if (spriteId.includes("sacerdote")) {
+      ctx.fillStyle = "#c8a028"; ctx.fillRect(-1, -h*0.32, 3, h*0.42);
+      ctx.fillStyle = "#f0e050"; ctx.fillRect(-5, -h*0.32, 13, 5);
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, -h*0.39, 1, 12);
+      ctx.fillRect(-4, -h*0.32, 10, 1);
+    } else if (spriteId.includes("patrulheiro")) {
+      ctx.strokeStyle = "#7a5018"; ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(-h*0.025, 0, h*0.18, -Math.PI*0.52, Math.PI*0.52);
+      ctx.stroke();
+      ctx.strokeStyle = "#d4c070"; ctx.lineWidth = 1;
+      const cx2 = h * 0.155;
+      ctx.beginPath();
+      ctx.moveTo(cx2, -h*0.17); ctx.lineTo(cx2, h*0.17);
+      ctx.stroke();
+      ctx.fillStyle = "#a07830";
+      ctx.fillRect(cx2 - 1, -h*0.10, h*0.25, 1);
+      ctx.fillStyle = "#e8e0c0";
+      ctx.fillRect(cx2 + h*0.23, -h*0.115, 3, 4);
+    } else if (spriteId.includes("cacador")) {
+      ctx.fillStyle = "#b0b8c8"; ctx.fillRect(-1, -h*0.22, 2, h*0.24);
+      ctx.fillStyle = "#d0d8e8"; ctx.fillRect(0, -h*0.22, 1, h*0.24);
+      ctx.fillStyle = "#4a2a0a"; ctx.fillRect(-2, h*0.02, 5, h*0.09);
+      ctx.fillStyle = "#9098a8"; ctx.fillRect(5, -h*0.18, 2, h*0.20);
+      ctx.fillStyle = "#4a2a0a"; ctx.fillRect(4, h*0.02, 4, h*0.08);
+    } else if (spriteId.includes("carrasco")) {
+      ctx.fillStyle = "#7a5018"; ctx.fillRect(-1, -h*0.36, 3, h*0.50);
+      ctx.fillStyle = "#909ab0";
+      ctx.beginPath();
+      ctx.moveTo(2, -h*0.36);
+      ctx.lineTo(h*0.22, -h*0.28);
+      ctx.lineTo(h*0.22, -h*0.06);
+      ctx.lineTo(2, h*0.02);
+      ctx.closePath(); ctx.fill();
+      ctx.fillStyle = "#c8d0e0";
+      ctx.beginPath();
+      ctx.moveTo(2, -h*0.34);
+      ctx.lineTo(h*0.17, -h*0.26);
+      ctx.lineTo(h*0.17, -h*0.10);
+      ctx.lineTo(2, -h*0.02);
+      ctx.closePath(); ctx.fill();
+    }
+
+    ctx.restore();
+  }
+
+  // ---------- projéteis ----------
 
   private desenharProjetil(p: Projetil): void {
     const ctx = this.ctx;
     const ang = Math.atan2(p.ty - p.oy, p.tx - p.ox);
-    // rastro
     p.rastro.forEach((r, i) => {
       const a = i / p.rastro.length;
       ctx.globalAlpha = a * 0.6;
@@ -329,10 +629,10 @@ export class VisaoDeCombate {
       ctx.save();
       ctx.translate(p.x, p.y);
       ctx.rotate(ang);
-      ctx.fillStyle = "#caa472"; ctx.fillRect(-9, -1, 12, 2); // haste
-      ctx.fillStyle = "#e8eef7"; // ponta
+      ctx.fillStyle = "#caa472"; ctx.fillRect(-9, -1, 12, 2);
+      ctx.fillStyle = "#e8eef7";
       ctx.beginPath(); ctx.moveTo(3, -3); ctx.lineTo(8, 0); ctx.lineTo(3, 3); ctx.closePath(); ctx.fill();
-      ctx.fillStyle = "#9aa0c0"; ctx.fillRect(-9, -3, 3, 2); ctx.fillRect(-9, 1, 3, 2); // penas
+      ctx.fillStyle = "#9aa0c0"; ctx.fillRect(-9, -3, 3, 2); ctx.fillRect(-9, 1, 3, 2);
       ctx.restore();
     } else {
       const [coreA, coreB] = this.coresOrbe(p.tipo);
@@ -343,7 +643,7 @@ export class VisaoDeCombate {
       ctx.fillStyle = grad;
       ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = "#ffffff";
-      ctx.fillRect(Math.round(p.x) - 1, Math.round(p.y) - 1, 2, 2); // núcleo brilhante
+      ctx.fillRect(Math.round(p.x) - 1, Math.round(p.y) - 1, 2, 2);
     }
   }
 
@@ -358,7 +658,25 @@ export class VisaoDeCombate {
     return this.coresOrbe(tipo)[1];
   }
 
-  // ---------- HUD sobre os combatentes ----------
+  private corElemento(elemento: string, spriteId: string): string {
+    if (elemento === "fogo") return "#ff7a2a";
+    if (elemento === "gelo") return "#46b6ff";
+    if (elemento === "raio") return "#ffd23a";
+    if (elemento === "bio") return "#5cd97a";
+    return this.corClasse(spriteId);
+  }
+
+  private corClasse(spriteId: string): string {
+    if (spriteId.includes("sacerdote")) return "#ffd96a";
+    if (spriteId.includes("feiticeira")) return "#c06cff";
+    if (spriteId.includes("cavaleiro")) return "#6aa0ff";
+    if (spriteId.includes("carrasco")) return "#ff6c6c";
+    if (spriteId.includes("patrulheiro")) return "#6ee089";
+    if (spriteId.includes("cacador")) return "#6cf2ff";
+    return "#ff8a8a";
+  }
+
+  // ---------- HUD ----------
 
   private desenharNome(nome: string, x: number, y: number, ehHeroi: boolean): void {
     const ctx = this.ctx;
@@ -388,22 +706,14 @@ export class VisaoDeCombate {
     const ctx = this.ctx;
     const largura = 110;
     const corVida = pct > 0.6 ? "#5cd97a" : pct > 0.3 ? "#f0c040" : "#ff5c5c";
-    // Fundo com borda
     ctx.fillStyle = "rgba(0,0,0,0.85)";
     ctx.fillRect(x - largura / 2 - 2, y - 14, largura + 4, 18);
-    ctx.strokeStyle = "#8b3030";
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = "#8b3030"; ctx.lineWidth = 1;
     ctx.strokeRect(x - largura / 2 - 2, y - 14, largura + 4, 18);
-    // Label BOSS
-    ctx.font = "bold 7px Segoe UI";
-    ctx.textAlign = "center";
-    ctx.fillStyle = "#ff8080";
-    ctx.fillText("⚠ BOSS", x, y - 6);
-    // Nome curto
-    ctx.fillStyle = "#ffd0a0";
-    ctx.font = "7px Segoe UI";
+    ctx.font = "bold 7px Segoe UI"; ctx.textAlign = "center";
+    ctx.fillStyle = "#ff8080"; ctx.fillText("⚠ BOSS", x, y - 6);
+    ctx.fillStyle = "#ffd0a0"; ctx.font = "7px Segoe UI";
     ctx.fillText(this.encurtar(nome), x, y - 0);
-    // Barra de vida
     ctx.fillStyle = "#1a0a0a";
     ctx.fillRect(x - largura / 2, y + 2, largura, 5);
     ctx.fillStyle = corVida;
@@ -430,12 +740,21 @@ export class VisaoDeCombate {
 
   private estado(id: string): EstadoAnim {
     let e = this.anim.get(id);
-    if (!e) { e = { faseAtaque: 0, alvoXNorm: 0, flash: 0, atira: false, faseMorte: 0 }; this.anim.set(id, e); }
+    if (!e) {
+      e = { faseAtaque: 0, alvoXNorm: 0, flash: 0, atira: false, faseMorte: 0, renderX: undefined };
+      this.anim.set(id, e);
+    }
     return e;
   }
 
   private localizar(s: SnapshotCombate, id: string): CombatenteSnapshot | undefined {
     return s.herois.find((c) => c.id === id) ?? s.inimigos.find((c) => c.id === id);
+  }
+
+  private personagemDe(spriteId: string): string {
+    if (spriteId.startsWith("heroi:")) return spriteId.slice("heroi:".length);
+    if (spriteId.startsWith("monstro:")) return `monstros/${spriteId.slice("monstro:".length)}`;
+    return spriteId;
   }
 
   private ehChefe(c: CombatenteSnapshot): boolean {
@@ -448,103 +767,10 @@ export class VisaoDeCombate {
   }
 
   private centroY(ehHeroi: boolean): number {
-    return this.linhaBase() - (ehHeroi ? 28 : 16);
+    return this.linhaBase() - (ehHeroi ? 36 : 18);
   }
 
   private linhaBase(): number {
     return this.canvas.height - 30 - ALTURA_TASKBAR;
-  }
-
-  // ---------- efeitos de skill por classe ----------
-
-  private tipoEfeitoSkill(spriteId: string): string {
-    if (spriteId.includes("sacerdote")) return "sagrado";
-    if (spriteId.includes("feiticeira")) return "magico";
-    if (spriteId.includes("cavaleiro") || spriteId.includes("carrasco")) return "guerreiro";
-    return "fisico";
-  }
-
-  private corEfeitoSkill(spriteId: string): string {
-    if (spriteId.includes("sacerdote")) return "#ffd96a";
-    if (spriteId.includes("feiticeira")) return "#c06cff";
-    if (spriteId.includes("cavaleiro")) return "#6aa0ff";
-    if (spriteId.includes("carrasco")) return "#ff6c6c";
-    if (spriteId.includes("patrulheiro")) return "#6ee089";
-    if (spriteId.includes("cacador")) return "#6cf2ff";
-    // Inimigos
-    return "#ff8a8a";
-  }
-
-  private atualizarEfeitos(): void {
-    const ctx = this.ctx;
-    this.efeitos = this.efeitos.filter((e) => e.vida > 0);
-    for (const ef of this.efeitos) {
-      const prog = 1 - ef.vida / 28;
-      ef.vida -= 1;
-      ctx.save();
-
-      if (ef.tipo === "sagrado") {
-        // Anel de luz sagrada + cruz dourada
-        const r = 8 + prog * 28;
-        ctx.globalAlpha = (1 - prog) * 0.85;
-        ctx.strokeStyle = ef.cor;
-        ctx.lineWidth = 3;
-        ctx.beginPath(); ctx.arc(ef.x, ef.y, r, 0, Math.PI * 2); ctx.stroke();
-        // Cruz
-        ctx.globalAlpha = (1 - prog) * 0.6;
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 2;
-        const s = r * 0.8;
-        ctx.beginPath();
-        ctx.moveTo(ef.x, ef.y - s); ctx.lineTo(ef.x, ef.y + s);
-        ctx.moveTo(ef.x - s, ef.y); ctx.lineTo(ef.x + s, ef.y);
-        ctx.stroke();
-      } else if (ef.tipo === "magico") {
-        // 6 orbes girando em espiral
-        for (let i = 0; i < 6; i++) {
-          const ang = (i / 6) * Math.PI * 2 + prog * Math.PI * 3;
-          const r = 6 + prog * 22;
-          const px = ef.x + Math.cos(ang) * r;
-          const py = ef.y + Math.sin(ang) * r;
-          ctx.globalAlpha = (1 - prog) * 0.9;
-          ctx.fillStyle = ef.cor;
-          ctx.beginPath(); ctx.arc(px, py, 3.5, 0, Math.PI * 2); ctx.fill();
-          ctx.globalAlpha = (1 - prog) * 0.5;
-          ctx.fillStyle = "#ffffff";
-          ctx.beginPath(); ctx.arc(px, py, 1.5, 0, Math.PI * 2); ctx.fill();
-        }
-        // Anel externo
-        ctx.globalAlpha = (1 - prog) * 0.4;
-        ctx.strokeStyle = ef.cor;
-        ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.arc(ef.x, ef.y, 6 + prog * 22, 0, Math.PI * 2); ctx.stroke();
-      } else if (ef.tipo === "guerreiro") {
-        // Slash diagonal com brilho
-        const size = 8 + prog * 20;
-        ctx.globalAlpha = (1 - prog) * 0.9;
-        ctx.strokeStyle = ef.cor;
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.moveTo(ef.x - size, ef.y - size * 0.7);
-        ctx.lineTo(ef.x + size, ef.y + size * 0.7);
-        ctx.stroke();
-        ctx.globalAlpha = (1 - prog) * 0.6;
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(ef.x - size * 0.8, ef.y - size * 0.5);
-        ctx.lineTo(ef.x + size * 0.8, ef.y + size * 0.5);
-        ctx.stroke();
-      } else {
-        // Físico: anel simples + flash
-        const r = 6 + prog * 20;
-        ctx.globalAlpha = (1 - prog) * 0.7;
-        ctx.strokeStyle = ef.cor;
-        ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.arc(ef.x, ef.y, r, 0, Math.PI * 2); ctx.stroke();
-      }
-
-      ctx.restore();
-    }
   }
 }

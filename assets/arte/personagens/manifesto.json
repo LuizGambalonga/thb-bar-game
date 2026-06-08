@@ -1,0 +1,62 @@
+{
+  "cavaleiro": {
+    "fps": 12, "ancoraY": 0.86, "folha": "warrior.png", "colunas": 10, "linhas": 10, "linhaBase": 0,
+    "animacoes": {
+      "parado":   { "linha": 0, "frames": 10, "loop": true },
+      "conjurar": { "linha": 1, "frames": 10, "loop": false },
+      "andar":    { "linha": 2, "frames": 10, "loop": true },
+      "atacar":   { "linha": 3, "frames": 10, "loop": false },
+      "morrer":   { "linha": 4, "frames": 10, "loop": false }
+    }
+  },
+  "carrasco": {
+    "fps": 12, "ancoraY": 0.86, "folha": "warrior.png", "colunas": 10, "linhas": 10, "linhaBase": 5,
+    "animacoes": {
+      "parado":   { "linha": 0, "frames": 10, "loop": true },
+      "conjurar": { "linha": 1, "frames": 10, "loop": false },
+      "andar":    { "linha": 2, "frames": 10, "loop": true },
+      "atacar":   { "linha": 3, "frames": 10, "loop": false },
+      "morrer":   { "linha": 4, "frames": 10, "loop": false }
+    }
+  },
+  "feiticeira": {
+    "fps": 12, "ancoraY": 0.86, "folha": "wizard.png", "colunas": 10, "linhas": 10, "linhaBase": 5,
+    "animacoes": {
+      "parado":   { "linha": 0, "frames": 10, "loop": true },
+      "conjurar": { "linha": 1, "frames": 10, "loop": false },
+      "andar":    { "linha": 2, "frames": 10, "loop": true },
+      "atacar":   { "linha": 3, "frames": 10, "loop": false },
+      "morrer":   { "linha": 4, "frames": 10, "loop": false }
+    }
+  },
+  "sacerdote": {
+    "fps": 12, "ancoraY": 0.86, "folha": "cleric.png", "colunas": 10, "linhas": 10, "linhaBase": 0,
+    "animacoes": {
+      "parado":   { "linha": 0, "frames": 10, "loop": true },
+      "conjurar": { "linha": 1, "frames": 10, "loop": false },
+      "andar":    { "linha": 2, "frames": 10, "loop": true },
+      "atacar":   { "linha": 3, "frames": 10, "loop": false },
+      "morrer":   { "linha": 4, "frames": 10, "loop": false }
+    }
+  },
+  "patrulheiro": {
+    "fps": 12, "ancoraY": 0.86, "folha": "ranger.png", "colunas": 10, "linhas": 10, "linhaBase": 0,
+    "animacoes": {
+      "parado":   { "linha": 0, "frames": 10, "loop": true },
+      "conjurar": { "linha": 1, "frames": 10, "loop": false },
+      "andar":    { "linha": 2, "frames": 10, "loop": true },
+      "atacar":   { "linha": 3, "frames": 10, "loop": false },
+      "morrer":   { "linha": 4, "frames": 10, "loop": false }
+    }
+  },
+  "cacador": {
+    "fps": 12, "ancoraY": 0.86, "folha": "rogue.png", "colunas": 10, "linhas": 10, "linhaBase": 0,
+    "animacoes": {
+      "parado":   { "linha": 0, "frames": 10, "loop": true },
+      "conjurar": { "linha": 1, "frames": 10, "loop": false },
+      "andar":    { "linha": 2, "frames": 10, "loop": true },
+      "atacar":   { "linha": 3, "frames": 10, "loop": false },
+      "morrer":   { "linha": 4, "frames": 10, "loop": false }
+    }
+  }
+}

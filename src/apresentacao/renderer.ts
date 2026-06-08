@@ -3,9 +3,11 @@
 import { VisaoDeCombate } from "./VisaoDeCombate.js";
 import { PainelInterface } from "./PainelInterface.js";
 import { preCarregarImagensSprites } from "./arte/imagensSprites.js";
+import { carregarFolhasSprite } from "./arte/folhasSprite.js";
 
 function iniciar(): void {
   preCarregarImagensSprites();
+  void carregarFolhasSprite();
   const params = new URLSearchParams(window.location.search);
   const modoPainel = params.get("painel") as "mochila" | "portal" | null;
 

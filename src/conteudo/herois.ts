@@ -10,13 +10,14 @@ export const HEROIS: DefHeroi[] = [
     icone: "🛡️",
     elemento: "nenhum",
     atributosBase: {
-      vida: 120, ataque: 12, defesa: 20, chanceCritico: 0.05,
+      vida: 160, ataque: 14, defesa: 24, chanceCritico: 0.05,
       multiplicadorCritico: 1.5, velocidadeAtaque: 0.9, rouboDeVida: 0, afinidades: {},
     },
     habilidades: [
       { id: "provocar", nome: "Provocar", cooldownTicks: 50, tipo: "buff", potencia: 0.2, alvo: "proprio" },
     ],
     desbloqueio: { custoOuro: 0 },
+    corpoACorpo: true,
   },
   {
     id: "patrulheiro",
@@ -25,8 +26,8 @@ export const HEROIS: DefHeroi[] = [
     icone: "🏹",
     elemento: "nenhum",
     atributosBase: {
-      vida: 70, ataque: 20, defesa: 6, chanceCritico: 0.2,
-      multiplicadorCritico: 1.6, velocidadeAtaque: 1.3, rouboDeVida: 0, afinidades: {},
+      vida: 70, ataque: 22, defesa: 6, chanceCritico: 0.2,
+      multiplicadorCritico: 1.6, velocidadeAtaque: 1.35, rouboDeVida: 0, afinidades: {},
     },
     habilidades: [
       { id: "tiroCerteiro", nome: "Tiro Certeiro", cooldownTicks: 40, tipo: "dano", potencia: 1.8, alvo: "inimigoFrente" },
@@ -41,8 +42,8 @@ export const HEROIS: DefHeroi[] = [
     icone: "🔮",
     elemento: "fogo",
     atributosBase: {
-      vida: 65, ataque: 24, defesa: 5, chanceCritico: 0.1,
-      multiplicadorCritico: 1.7, velocidadeAtaque: 0.8, rouboDeVida: 0, afinidades: { fogo: 0.2 },
+      vida: 65, ataque: 26, defesa: 5, chanceCritico: 0.1,
+      multiplicadorCritico: 1.7, velocidadeAtaque: 0.85, rouboDeVida: 0, afinidades: { fogo: 0.2 },
     },
     habilidades: [
       { id: "estouro", nome: "Estouro de Pilha", cooldownTicks: 60, tipo: "dano", potencia: 1.2, alvo: "todosInimigos" },
@@ -57,7 +58,7 @@ export const HEROIS: DefHeroi[] = [
     icone: "✨",
     elemento: "nenhum",
     atributosBase: {
-      vida: 80, ataque: 10, defesa: 8, chanceCritico: 0.05,
+      vida: 90, ataque: 11, defesa: 10, chanceCritico: 0.05,
       multiplicadorCritico: 1.5, velocidadeAtaque: 1.0, rouboDeVida: 0.1, afinidades: {},
     },
     habilidades: [
@@ -73,8 +74,8 @@ export const HEROIS: DefHeroi[] = [
     icone: "🪤",
     elemento: "gelo",
     atributosBase: {
-      vida: 75, ataque: 18, defesa: 7, chanceCritico: 0.15,
-      multiplicadorCritico: 1.6, velocidadeAtaque: 1.1, rouboDeVida: 0, afinidades: { gelo: 0.15 },
+      vida: 78, ataque: 19, defesa: 8, chanceCritico: 0.15,
+      multiplicadorCritico: 1.6, velocidadeAtaque: 1.15, rouboDeVida: 0, afinidades: { gelo: 0.15 },
     },
     habilidades: [
       { id: "armadilha", nome: "Armadilha", cooldownTicks: 55, tipo: "dano", potencia: 1.4, alvo: "inimigoFrente" },
@@ -89,12 +90,13 @@ export const HEROIS: DefHeroi[] = [
     icone: "⚔️",
     elemento: "raio",
     atributosBase: {
-      vida: 85, ataque: 26, defesa: 8, chanceCritico: 0.25,
+      vida: 95, ataque: 28, defesa: 9, chanceCritico: 0.28,
       multiplicadorCritico: 1.8, velocidadeAtaque: 1.0, rouboDeVida: 0.05, afinidades: { raio: 0.2 },
     },
     habilidades: [
       { id: "encerrar", nome: "Encerrar Processo", cooldownTicks: 70, tipo: "dano", potencia: 2.5, alvo: "inimigoFrente" },
     ],
     desbloqueio: { custoOuro: 10000 },
+    corpoACorpo: true,
   },
 ];

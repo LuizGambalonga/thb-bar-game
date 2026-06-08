@@ -49,7 +49,10 @@ export class EstadoDoJogo {
           quantidade: evento.quantidade, critico: evento.critico,
         });
       } else if (evento.tipo === "habilidade") {
-        eventosSnapshot.push({ tipo: "habilidade", idAutor: evento.idAutor });
+        eventosSnapshot.push({
+          tipo: "habilidade", idAutor: evento.idAutor, idHabilidade: evento.idHabilidade,
+          tipoSkill: evento.tipoSkill, idsAlvos: evento.idsAlvos, elemento: evento.elemento,
+        });
       } else if (evento.tipo === "morteInimigo") {
         const dropEvento = this.processarMorteInimigo(evento.idTabelaEspolio, evento.xp);
         if (dropEvento) eventosSnapshot.push(dropEvento);
@@ -259,7 +262,7 @@ export class EstadoDoJogo {
           raridadeEquip: heroi ? this.melhorRaridadeEquip(heroi) : null,
           temArma: !!heroi?.equipamento.arma,
           vidaPct: c.vidaMax > 0 ? Math.max(0, c.vidaAtual / c.vidaMax) : 0,
-          x: c.posicaoX, elemento: c.elemento,
+          x: c.posicaoX, estadoMov: c.estadoMov, elemento: c.elemento,
         };
       }),
       inimigos: inimigos.map((c) => ({
@@ -268,7 +271,7 @@ export class EstadoDoJogo {
         projetil: c.idMonstro ? obterMonstro(c.idMonstro).projetil ?? null : null,
         raridadeEquip: null, temArma: false,
         vidaPct: c.vidaMax > 0 ? Math.max(0, c.vidaAtual / c.vidaMax) : 0,
-        x: c.posicaoX, elemento: c.elemento,
+        x: c.posicaoX, estadoMov: c.estadoMov, elemento: c.elemento,
       })),
       eventos,
     };
@@ -490,6 +493,7 @@ export class EstadoDoJogo {
         atributos: this.atributosDoHeroi(heroi),
         posicao: this.salvo.party.formacao[slot] ?? "frente",
         habilidades: def.habilidades,
+        corpoACorpo: def.corpoACorpo ?? false,
       });
     });
     return dados;
