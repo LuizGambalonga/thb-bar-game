@@ -56,6 +56,12 @@ Atende à Constituição. Stack ajustada para **build/run fáceis** (decisão do
 - `esbuild` empacota `principal/main`, `principal/preload` (node, electron externo) e `apresentacao/renderer` (browser). HTML/CSS copiados.
 - `npm run dev` = build + abre Electron. `npm run dist` = electron-builder (NSIS, Windows).
 
+## Geração de assets
+- `scripts/gerar-sprites-svg.mjs` — gera os SVGs de pixel art em `assets/arte/herois/` e `assets/arte/monstros/`.
+  Cada sprite é definido como grade de caracteres (14×24 heróis, dimensões variadas para monstros).
+  Executar após editar designs: `node scripts/gerar-sprites-svg.mjs`.
+  Os SVGs gerados são commitados no repositório — não requerem build step obrigatório.
+
 ## Testes
 - Vitest no `nucleo`/`conteudo`: fórmulas, loot (distribuição com semente fixa), progressão, migração, **golden test** (N ticks com semente fixa ⇒ snapshot estável).
 

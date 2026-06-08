@@ -30,15 +30,15 @@ export function obterImagemSprite(spriteId: string): HTMLImageElement | null {
 
 /** Aspectos padrão por prefixo de spriteId (largura/altura do SVG de origem). */
 const ASPECT: Record<string, number> = {
-  "heroi:": 32 / 48,
-  "monstro:grub-binario": 24 / 20,
-  "monstro:espectro-zumbi": 20 / 28,
-  "monstro:raposa-neon": 24 / 22,
-  "monstro:morcego-viral": 22 / 20,
-  "monstro:leviata-dados": 28 / 26,
-  "monstro:lobo-corrompido": 26 / 24,
-  "monstro:verme-abismo": 28 / 28,
-  "monstro:golem-hardware": 28 / 26,
+  "heroi:":                  14 / 24,
+  "monstro:grub-binario":    12 / 8,
+  "monstro:espectro-zumbi":  12 / 20,
+  "monstro:raposa-neon":     14 / 12,
+  "monstro:morcego-viral":   16 / 10,
+  "monstro:leviata-dados":   14 / 22,
+  "monstro:lobo-corrompido": 14 / 16,
+  "monstro:verme-abismo":    16 / 14,
+  "monstro:golem-hardware":  14 / 22,
 };
 
 function aspectRatio(spriteId: string): number {

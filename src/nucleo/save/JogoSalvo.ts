@@ -72,7 +72,7 @@ export function criarJogoNovo(agora: number, semente: number): JogoSalvo {
     cubo: { funcoesDesbloqueadas: [] },
     runas: { alocados: {}, pontosDisponiveis: 0 },
     progresso: {
-      idFaseAtual: "a1n-bits",
+      idFaseAtual: "a1d-planicies",
       fasesLimpas: [],
       indiceOndaAtual: 0,
       logsDesbloqueados: [],
@@ -89,13 +89,13 @@ export function criarJogoNovo(agora: number, semente: number): JogoSalvo {
 }
 
 const MAPA_FASE_LEGADA: Record<string, string> = {
-  "ato1-normal": "a1n-bits", "ato1-dificil": "a1d-bits",
+  "ato1-normal": "a1d-planicies", "ato1-dificil": "a1d-bits",
   "ato1-pesadelo": "a1p-bits", "ato1-kernelPanic": "a1k-bits",
 };
 const PREFIXOS_FASE_VALIDOS = ["a1n-", "a1d-", "a1p-", "a1k-"];
 function normalizarFase(id: string): string {
   if (PREFIXOS_FASE_VALIDOS.some((p) => id.startsWith(p))) return id;
-  return MAPA_FASE_LEGADA[id] ?? "a1n-bits";
+  return MAPA_FASE_LEGADA[id] ?? "a1d-planicies";
 }
 
 /** Migrações encadeadas: índice = versão de origem → produz a versão seguinte. */
@@ -107,7 +107,7 @@ export const migracoes: Record<number, (anterior: any) => any> = {
     versaoEsquema: 4,
     progresso: {
       ...s.progresso,
-      idFaseAtual: normalizarFase(s.progresso?.idFaseAtual ?? "a1n-bits"),
+      idFaseAtual: normalizarFase(s.progresso?.idFaseAtual ?? "a1d-planicies"),
       fasesLimpas: (s.progresso?.fasesLimpas ?? []).filter((id: string) =>
         PREFIXOS_FASE_VALIDOS.some((p) => id.startsWith(p)),
       ),

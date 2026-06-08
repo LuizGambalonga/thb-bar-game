@@ -1,40 +1,68 @@
 # 012 — Arte / Pixel Art & Apresentação Visual
 
 ## Objetivo
-Mostrar ao jogador imagens reais (não só cores): sprites de pixel art animados dos heróis e monstros, terreno/mapa, nomes e barras — e uma Mochila em popup com grade de slots, ícones e atributos.
+Heróis e monstros renderizados como pixel art real, com animações de combate, cenário temático, nomes, barras de vida e efeitos de habilidade visuais.
 
 ## Requisitos (EARS)
-- **R12.1** O sistema DEVE renderizar cada herói e monstro como **sprite de pixel art** (não um retângulo), com ≥1 frame e animação de movimento (bob/tremor/flash ao tomar dano).
-- **R12.2** O sistema DEVE desenhar um **cenário/mapa** temático do Ato (Espaço do Usuário: grade, janelas de apps, chão em blocos, barra de tarefas).
+
+- **R12.1** O sistema DEVE renderizar cada herói e monstro como **sprite de pixel art** com animação de movimento (bob/tremor/flash ao tomar dano).
+- **R12.2** O sistema DEVE desenhar um **cenário/mapa** temático do Ato.
 - **R12.3** O sistema DEVE exibir o **nome** de cada combatente e sua barra de vida na arena.
-- **R12.4** A **Mochila** DEVE abrir como **popup**, com grade de **slots** (quadradinhos), **ícone** por item, e ao selecionar um item, mostrar **nome, raridade, espaço, poder e todos os atributos** (quanto de ataque/vida/defesa etc.).
-- **R12.5** No detalhe do item, o sistema DEVE permitir **Equipar** (por herói da party), **Desequipar** e **Vender**.
-- **R12.6** Ao atacar, o combatente DEVE **avançar até o alvo** (investida), exibir **pose de ataque** e **recuar**; quem toma dano DEVE reagir (tremor). Heróis investem contra monstros e monstros investem contra os heróis.
+- **R12.4** A **Mochila** DEVE abrir como **popup** com grade de slots, ícone por item e painel de atributos.
+- **R12.5** No detalhe do item: **Equipar** (por herói da party), **Desequipar** e **Vender**.
+- **R12.6** Ao atacar, o combatente DEVE avançar até o alvo, exibir pose de ataque e recuar; quem toma dano treme.
+- **R12.7** Habilidades DEVEM ter **efeito visual de skill** — cada classe tem tipo e cor próprios.
 
-## Critérios de Aceite
-- Heróis/monstros aparecem como figuras reconhecíveis e se mexem; o fundo parece um mapa, não cores soltas.
-- A mochila abre em popup; cada item mostra ícone + atributos completos; equipar reflete no DPS.
+## Sistema de sprites SVG (implementação atual)
 
-## Design
-- `apresentacao/arte/sprites.ts`: pixel art **procedural** (grade de caracteres + paleta), desenhada no Canvas2D. Sem PNGs → build leve; trocável por arte real depois (basta substituir os sprites).
-- `apresentacao/arte/cenario.ts`: desenho procedural do mapa do Ato I.
-- `VisaoDeCombate`: cenário + sprites + animação (frame swap, bob, tremor/flash) + nomes + dano flutuante.
-- `PainelInterface`: popup `modal-mochila` com `grade-itens` (slots) e `detalhe-item` (atributos + ações).
-- Contrato estendido: `CombatenteSnapshot.spriteId/icone`, `ItemSnapshot.atributos`.
+### Gerador
+`scripts/gerar-sprites-svg.mjs` — define sprites como grade de caracteres e gera SVGs com `<rect>` 1×1 (`shape-rendering="crispEdges"`). Para regenerar após editar designs:
+```
+node scripts/gerar-sprites-svg.mjs
+```
+
+### Arquivos gerados
+- `assets/arte/herois/{classe}.svg` — heróis (14×24 px)
+- `assets/arte/monstros/{id}.svg` — monstros (12×8 a 16×14 px conforme tipo)
+
+### Inspiração visual
+Sprites modelados sobre o TBH original (~14-20px): silhueta imediata, paleta mínima (4-6 cores), outline escuro, sem detalhes supérfluos.
+
+### Carregamento
+`src/apresentacao/arte/imagensSprites.ts`:
+- Pré-carrega todos os SVGs via `new Image()` no início do renderer.
+- Cache com chaves `heroi:classeId` e `monstro:monstroId`.
+- `desenharImagemSprite(ctx, spriteId, centroX, baseY, altura)` — `imageSmoothingEnabled = false`.
+- ASPECT ratios por spriteId mapeados para preservar proporções originais.
+
+### Efeitos de habilidade
+`VisaoDeCombate.ts` — sistema `EfeitoSkill` com 4 tipos visuais por classe:
+- `sagrado` (sacerdote): anel expansivo + cruz dourada
+- `magico` (feiticeira): partículas orbitais
+- `guerreiro` (cavaleiro/carrasco): traço diagonal
+- `fisico` (patrulheiro/caçador): anel simples
+
+## Classes e seus sprites
+
+| Classe | Dimensão | Características visuais |
+|---|---|---|
+| cavaleiro   | 14×24 | Azul, capacete fechado com viseira escura |
+| feiticeira  | 14×24 | Roxo, chapéu pontudo alto (~6 linhas), rosto visível |
+| patrulheiro | 14×24 | Verde, capuz com rosto e olhos visíveis |
+| sacerdote   | 14×24 | Branco/azul, halo dourado acima da cabeça |
+| cacador     | 14×24 | Teal escuro, olhos teal brilhantes, máscara |
+| carrasco    | 14×24 | Vermelho, crânio com olhos ocos, pesado |
 
 ## Tarefas
-- [x] T12.1 Sistema de sprites procedurais + render no Canvas2D.
-- [x] T12.2 Sprites das 6 classes e dos 6 monstros do Ato I.
+- [x] T12.1 Sistema de sprites SVG gerado por script.
+- [x] T12.2 Sprites das 6 classes e dos 8 monstros do Ato I.
 - [x] T12.3 Cenário/mapa do Ato I.
 - [x] T12.4 Nomes + barras na arena; animação de movimento e dano.
 - [x] T12.5 Mochila popup com grade, ícones, atributos e ações.
-- [x] T12.6 Sprites maiores/detalhados (heróis 14×16 com sombreamento) + frames de ataque.
-- [x] T12.7 Combate com movimentação: investida até o alvo, pose de ataque, recuo e tremor ao tomar dano.
-- [x] T12.8 Projéteis visíveis com rastro (flecha/fogo/gelo) — dano só aplica no impacto; pose de tiro com recuo.
-- [x] T12.9 Animação de morte (dissolução + partículas) e partículas de impacto.
-- [ ] T12.10 (futuro) Sprite sheets PNG dedicados de alta resolução + frames de morte por monstro + projéteis dos monstros.
+- [x] T12.6 Combate com movimentação: investida, pose de ataque, recuo, tremor.
+- [x] T12.7 Projéteis visíveis com rastro; dano no impacto; pose de tiro.
+- [x] T12.8 Animação de morte (dissolução + partículas) e partículas de impacto.
+- [x] T12.9 Efeitos de habilidade visuais por classe (EfeitoSkill).
+- [ ] T12.10 (futuro) Frames de ataque e morte individuais por herói; projéteis dos monstros.
 
-### Quais classes atiram (data-driven, `DefHeroi.projetil`)
-Patrulheiro → flecha · Feiticeira → fogo · Caçador → gelo. Demais (Cavaleiro, Sacerdote, Carrasco) são corpo a corpo.
-
-## Status: 🟢 Implementado (arte procedural detalhada, combate em movimento, projéteis e morte)
+## Status: 🟢 Implementado (SVGs pixel art, combate em movimento, projéteis, morte, skill FX)
